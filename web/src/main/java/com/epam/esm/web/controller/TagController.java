@@ -29,9 +29,10 @@ public class TagController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void saveTag(@RequestBody TagDto tag) throws ValidationException {
-        tagService.saveTag(tag);
+    public ResponseEntity<TagDto> saveTag(@RequestBody TagDto tag) throws ValidationException {
+        TagDto saved = tagService.save(tag);
+        return ResponseEntity.ok(saved);
+
     }
 
     @GetMapping("/{id}")
@@ -49,6 +50,11 @@ public class TagController {
     @GetMapping
     public ResponseEntity<Set<TagDto>> getAll() {
         return ResponseEntity.ok(tagService.getAll());
+    }
+
+    @GetMapping("top/user/popular/tag")
+    public ResponseEntity<TagDto> getTopUserMostPopularTag () {
+        return ResponseEntity.ok(tagService.getTopUserMostPopularTag());
     }
 
 }

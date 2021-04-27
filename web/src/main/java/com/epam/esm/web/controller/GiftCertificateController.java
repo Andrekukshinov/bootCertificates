@@ -1,9 +1,8 @@
 package com.epam.esm.web.controller;
 
-import com.epam.esm.service.dto.GiftCertificateTagDto;
-import com.epam.esm.service.dto.GiftCertificatesNoTagDto;
-import com.epam.esm.service.dto.SpecificationDto;
+import com.epam.esm.service.dto.certificate.GiftCertificateTagDto;
 import com.epam.esm.service.exception.ValidationException;
+import com.epam.esm.service.model.RequestParams;
 import com.epam.esm.service.service.GiftCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -38,10 +37,10 @@ public class GiftCertificateController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void saveGiftCertificate(@RequestBody GiftCertificateTagDto certificate) throws ValidationException {
+    public ResponseEntity<GiftCertificateTagDto> saveGiftCertificate(@RequestBody GiftCertificateTagDto certificate) throws ValidationException {
+        GiftCertificateTagDto saved = certificateService.save(certificate);
+        return ResponseEntity.ok(saved);
 
-        certificateService.save(certificate);
     }
 
     @DeleteMapping("/{id}")
@@ -51,14 +50,16 @@ public class GiftCertificateController {
     }
 
     @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateCertificate(@RequestBody GiftCertificateTagDto certificateDto, @PathVariable Long id) throws ValidationException {
-        certificateService.updateCertificate(certificateDto, id);
+    public ResponseEntity<GiftCertificateTagDto> updateCertificate(@RequestBody GiftCertificateTagDto certificateDto, @PathVariable Long id) throws ValidationException {
+        GiftCertificateTagDto updated = certificateService.updateCertificate(certificateDto, id);
+        return ResponseEntity.ok(updated);
+
     }
 
     @GetMapping()
-    public ResponseEntity<List<GiftCertificatesNoTagDto>> getByParam(SpecificationDto specification) {
-        List<GiftCertificatesNoTagDto> bySpecification = certificateService.getBySpecification(specification);
+    public ResponseEntity<List<GiftCertificateTagDto>> getByParam(RequestParams specification) {
+        List<GiftCertificateTagDto> bySpecification = certificateService.getBySpecification(specification);
         return ResponseEntity.ok(bySpecification);
     }
+
 }

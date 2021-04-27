@@ -1,9 +1,9 @@
 package com.epam.esm.service.service;
 
-import com.epam.esm.service.dto.GiftCertificateTagDto;
-import com.epam.esm.service.dto.GiftCertificatesNoTagDto;
-import com.epam.esm.service.dto.SpecificationDto;
+import com.epam.esm.persistence.entity.GiftCertificate;
+import com.epam.esm.service.dto.certificate.GiftCertificateTagDto;
 import com.epam.esm.service.exception.ValidationException;
+import com.epam.esm.service.model.RequestParams;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ public interface GiftCertificateService {
      * @param certificate dto to be validated and performed logics with
      * @throws ValidationException in case of validation error occur
      */
-    void save(GiftCertificateTagDto certificate) throws ValidationException;
+    GiftCertificateTagDto save(GiftCertificateTagDto certificate) throws ValidationException;
 
     /**
      * Method that returns GiftCertificateTag dto based on received id
@@ -43,15 +43,18 @@ public interface GiftCertificateService {
      * @param updateId       certificate param to be updated by
      * @throws ValidationException in case of validation error occur
      */
-    void updateCertificate(GiftCertificateTagDto certificateDto, Long updateId) throws ValidationException;
+    GiftCertificateTagDto updateCertificate(GiftCertificateTagDto certificateDto, Long updateId) throws ValidationException;
 
     /**
      * Method that returns list of GiftCertificateTag dto entities based on
      * received specification dto object
      *
-     * @param searchSpecification to find object with
+     * @param specification to find object with
      * @return list of GiftCertificateTag dto entity with specified id
      * @throws com.epam.esm.service.exception.EntityNotFoundException if entity with id not exists
      */
-    List<GiftCertificatesNoTagDto> getBySpecification(SpecificationDto searchSpecification);
+    List<GiftCertificateTagDto> getBySpecification(RequestParams params);
+
+    List<GiftCertificate> getCertificatesBySpecification(RequestParams params);
+    List<GiftCertificate> getActiveCertificatesBySpecification(RequestParams params);
 }

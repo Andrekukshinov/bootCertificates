@@ -6,7 +6,6 @@ import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.exception.EntityAlreadyExistsException;
 import com.epam.esm.service.exception.EntityNotFoundException;
 import com.epam.esm.service.exception.ValidationException;
-import com.epam.esm.service.service.TagGiftCertificateService;
 import com.epam.esm.service.validation.SaveValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,8 +38,7 @@ class TagServiceImplTest {
 
     @Mock
     private TagRepository tagRepository;
-    @Mock
-    private TagGiftCertificateService tagCertificateService;
+
     @Mock
     private ModelMapper modelMapper;
     @Mock
@@ -59,7 +57,7 @@ class TagServiceImplTest {
         when(tagRepository.findByName(any())).thenReturn(Optional.empty());
         when(modelMapper.map(any(), any())).thenReturn((PEOPLE_TAG));
 
-        service.saveTag(PEOPLE_TAG_DTO);
+        service.save(PEOPLE_TAG_DTO);
 
         verify(tagRepository, times(1)).save(any());
         verify(tagRepository, times(1)).findByName(any());
@@ -71,7 +69,7 @@ class TagServiceImplTest {
         doThrow(ValidationException.class).when(updateValidator).validate(any());
         when(modelMapper.map(any(), any())).thenReturn(PEOPLE_TAG);
 
-        assertThrows(ValidationException.class, () -> service.saveTag(PEOPLE_TAG_DTO));
+        assertThrows(ValidationException.class, () -> service.save(PEOPLE_TAG_DTO));
 
         verify(tagRepository, times(0)).save(any());
         verify(tagRepository, times(0)).findByName(any());
@@ -83,7 +81,7 @@ class TagServiceImplTest {
         when(modelMapper.map(any(), any())).thenReturn((PEOPLE_TAG));
         when(modelMapper.map(any(), any())).thenReturn(PEOPLE_TAG);
 
-        assertThrows(EntityAlreadyExistsException.class, () -> service.saveTag(PEOPLE_TAG_DTO));
+        assertThrows(EntityAlreadyExistsException.class, () -> service.save(PEOPLE_TAG_DTO));
 
         verify(tagRepository, times(0)).save(any());
         verify(tagRepository, times(1)).findByName(any());
@@ -94,7 +92,7 @@ class TagServiceImplTest {
         service.deleteTag(CERTIFICATE_ID_DEFAULT_ID);
 
         verify(tagRepository, times(1)).delete(any());
-        verify(tagCertificateService, times(1)).deleteTags(any());
+
     }
 
     @Test

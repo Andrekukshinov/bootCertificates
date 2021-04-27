@@ -58,7 +58,7 @@ class TagControllerTest {
 
         mockMvc.perform(post("/api/v1/tags").content(bytes).contentType(APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful());
-        verify(service, times(1)).saveTag(TAG_DTO);
+        verify(service, times(1)).save(TAG_DTO);
     }
 
     @Test

@@ -2,47 +2,33 @@ package com.epam.esm.service.dto;
 
 import com.epam.esm.persistence.model.enums.SortDirection;
 
+import java.util.List;
+import java.util.Objects;
+
 public class SpecificationDto {
-    private String tagName;
+    private List<String> tagNames;
     private String certificateDescription;
     private String certificateName;
     private SortDirection nameSortDir;
     private SortDirection createDateSortDir;
 
-    public SpecificationDto(SortDirection createDateSortDir, SortDirection nameSortDir,
-                            String tagName, String certificateDescription, String certificateName) {
-        this.createDateSortDir = createDateSortDir;
-        this.nameSortDir = nameSortDir;
-        this.tagName = tagName;
+    public SpecificationDto(List<String> tagNames, String certificateDescription, String certificateName, SortDirection nameSortDir, SortDirection createDateSortDir) {
+        this.tagNames = tagNames;
         this.certificateDescription = certificateDescription;
         this.certificateName = certificateName;
+        this.nameSortDir = nameSortDir;
+        this.createDateSortDir = createDateSortDir;
     }
 
     public SpecificationDto() {
     }
 
-    public SortDirection getCreateDateSortDir() {
-        return createDateSortDir;
+    public List<String> getTagNames() {
+        return tagNames;
     }
 
-    public void setCreateDateSortDir(SortDirection createDateSortDir) {
-        this.createDateSortDir = createDateSortDir;
-    }
-
-    public SortDirection getNameSortDir() {
-        return nameSortDir;
-    }
-
-    public void setNameSortDir(SortDirection nameSortDir) {
-        this.nameSortDir = nameSortDir;
-    }
-
-    public String getTagName() {
-        return tagName;
-    }
-
-    public void setTagName(String tagName) {
-        this.tagName = tagName;
+    public void setTagNames(List<String> tagNames) {
+        this.tagNames = tagNames;
     }
 
     public String getCertificateDescription() {
@@ -61,14 +47,30 @@ public class SpecificationDto {
         this.certificateName = certificateName;
     }
 
+    public SortDirection getNameSortDir() {
+        return nameSortDir;
+    }
+
+    public void setNameSortDir(SortDirection nameSortDir) {
+        this.nameSortDir = nameSortDir;
+    }
+
+    public SortDirection getCreateDateSortDir() {
+        return createDateSortDir;
+    }
+
+    public void setCreateDateSortDir(SortDirection createDateSortDir) {
+        this.createDateSortDir = createDateSortDir;
+    }
+
     @Override
     public String toString() {
         return "SpecificationDto{" +
-                "createDateSortDir=" + createDateSortDir +
-                ", nameSortDir=" + nameSortDir +
-                ", tagName='" + tagName + '\'' +
+                "tagNames=" + tagNames +
                 ", certificateDescription='" + certificateDescription + '\'' +
                 ", certificateName='" + certificateName + '\'' +
+                ", nameSortDir=" + nameSortDir +
+                ", createDateSortDir=" + createDateSortDir +
                 '}';
     }
 
@@ -80,31 +82,12 @@ public class SpecificationDto {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-
         SpecificationDto that = (SpecificationDto) o;
-
-        if (getCreateDateSortDir() != that.getCreateDateSortDir()) {
-            return false;
-        }
-        if (getNameSortDir() != that.getNameSortDir()) {
-            return false;
-        }
-        if (getTagName() != null ? !getTagName().equals(that.getTagName()) : that.getTagName() != null) {
-            return false;
-        }
-        if (getCertificateDescription() != null ? !getCertificateDescription().equals(that.getCertificateDescription()) : that.getCertificateDescription() != null) {
-            return false;
-        }
-        return getCertificateName() != null ? getCertificateName().equals(that.getCertificateName()) : that.getCertificateName() == null;
+        return Objects.equals(getTagNames(), that.getTagNames()) && Objects.equals(getCertificateDescription(), that.getCertificateDescription()) && Objects.equals(getCertificateName(), that.getCertificateName()) && getNameSortDir() == that.getNameSortDir() && getCreateDateSortDir() == that.getCreateDateSortDir();
     }
 
     @Override
     public int hashCode() {
-        int result = getCreateDateSortDir() != null ? getCreateDateSortDir().hashCode() : 0;
-        result = 31 * result + (getNameSortDir() != null ? getNameSortDir().hashCode() : 0);
-        result = 31 * result + (getTagName() != null ? getTagName().hashCode() : 0);
-        result = 31 * result + (getCertificateDescription() != null ? getCertificateDescription().hashCode() : 0);
-        result = 31 * result + (getCertificateName() != null ? getCertificateName().hashCode() : 0);
-        return result;
+        return Objects.hash(getTagNames(), getCertificateDescription(), getCertificateName(), getNameSortDir(), getCreateDateSortDir());
     }
 }

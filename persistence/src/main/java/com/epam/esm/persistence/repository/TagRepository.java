@@ -8,7 +8,7 @@ import java.util.Set;
 /**
  * Interface for executing operations with Tag entity within data source
  */
-public interface TagRepository extends CRDRepository<Tag> {
+public interface TagRepository extends CreateDeleteRepository<Tag> {
     /**
      * Method for returning set of tags found by names from data source
      *
@@ -30,4 +30,10 @@ public interface TagRepository extends CRDRepository<Tag> {
      * @return list of tags
      */
     Set<Tag> findAll();
+
+    Set<Tag> saveAll(Set<Tag> tagsToBeSaved);
+
+    Optional<Tag> findInCertificates(Long id);
+
+    Tag getTopUserMostPopularTag();
 }

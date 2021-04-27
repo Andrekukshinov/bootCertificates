@@ -1,7 +1,7 @@
 package com.epam.esm.service.validation.impl;
 
-import com.epam.esm.service.dto.GiftCertificateTagDto;
 import com.epam.esm.service.dto.TagDto;
+import com.epam.esm.service.dto.certificate.GiftCertificateTagDto;
 import com.epam.esm.service.exception.ValidationException;
 import com.epam.esm.service.validation.SaveValidator;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,22 +1,15 @@
 plugins {
-    id 'org.springframework.boot'  version '2.4.4'
     id 'java'
+    id 'org.springframework.boot'  version '2.4.4'
 }
 
 dependencies {
-//
-//    // https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator
-//    testImplementation group: 'org.hibernate.validator', name: 'hibernate-validator', version: '7.0.1.Final'
-
-    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
     implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.14.1'
 
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.1'
-
 
     implementation project(":persistence")
 

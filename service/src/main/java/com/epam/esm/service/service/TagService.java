@@ -1,5 +1,6 @@
 package com.epam.esm.service.service;
 
+import com.epam.esm.persistence.entity.Tag;
 import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.exception.ValidationException;
 
@@ -15,7 +16,7 @@ public interface TagService {
      * @param tag dto to be validated and performed logics with
      * @throws ValidationException in case of validation error occur
      */
-    void saveTag(TagDto tag) throws ValidationException;
+    TagDto save(TagDto tag) throws ValidationException;
 
     /**
      * Method that deletes object from system
@@ -38,4 +39,8 @@ public interface TagService {
      * @return list of tag dtos
      */
     Set<TagDto> getAll();
+
+    Set<Tag> saveAll(Set<Tag> tagToBeSaved);
+
+    TagDto getTopUserMostPopularTag();
 }
