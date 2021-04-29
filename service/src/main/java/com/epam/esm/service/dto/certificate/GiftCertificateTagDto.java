@@ -1,13 +1,14 @@
 package com.epam.esm.service.dto.certificate;
 
 import com.epam.esm.service.dto.TagDto;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
 
-public class GiftCertificateTagDto {
+public class GiftCertificateTagDto extends RepresentationModel<GiftCertificateTagDto> {
     private Long id;
     private LocalDateTime createDate;
     private LocalDateTime lastUpdateDate;
@@ -112,7 +113,7 @@ public class GiftCertificateTagDto {
         return Objects.hash(getId(), getCreateDate(), getLastUpdateDate(), getName(), getDescription(), getPrice(), getDuration(), getTags());
     }
 
-    public static final Builder getBuilder() {
+    public static Builder getBuilder() {
         return new Builder();
     }
 

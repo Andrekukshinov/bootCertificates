@@ -12,13 +12,14 @@ import com.epam.esm.service.service.TagService;
 import com.epam.esm.service.validation.SaveValidator;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class TagServiceImpl implements TagService {
@@ -72,11 +73,9 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public Set<TagDto> getAll() {
-        return tagRepository.findAll()
-                .stream()
-                .map((tag) -> modelMapper.map(tag, TagDto.class))
-                .collect(Collectors.toSet());
+    public Page<TagDto> getAll(Pageable pageable) {
+        Page<Tag> tagPage = tagRepository.findAll(pageable);
+        return tagPage.map(tag -> modelMapper.map(tag, TagDto.class));
     }
 
     @Override

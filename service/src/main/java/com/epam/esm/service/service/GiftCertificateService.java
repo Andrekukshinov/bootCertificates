@@ -4,8 +4,8 @@ import com.epam.esm.persistence.entity.GiftCertificate;
 import com.epam.esm.service.dto.certificate.GiftCertificateTagDto;
 import com.epam.esm.service.exception.ValidationException;
 import com.epam.esm.service.model.RequestParams;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 
 /**
@@ -53,8 +53,8 @@ public interface GiftCertificateService {
      * @return list of GiftCertificateTag dto entity with specified id
      * @throws com.epam.esm.service.exception.EntityNotFoundException if entity with id not exists
      */
-    List<GiftCertificateTagDto> getBySpecification(RequestParams params);
+    Page<GiftCertificateTagDto> getBySpecification(RequestParams params, Pageable pageable);
 
-    List<GiftCertificate> getCertificatesBySpecification(RequestParams params);
-    List<GiftCertificate> getActiveCertificatesBySpecification(RequestParams params);
+    Page<GiftCertificate> getCertificatesBySpecification(RequestParams params, Pageable pageable);
+//    List<GiftCertificate> getActiveCertificatesBySpecification(RequestParams params);
 }

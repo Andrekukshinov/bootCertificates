@@ -20,6 +20,8 @@ import com.epam.esm.service.validation.SaveValidator;
 import com.epam.esm.service.validation.UpdateValidator;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +32,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class GiftCertificateServiceImpl implements GiftCertificateService {
@@ -104,27 +105,23 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public List<GiftCertificateTagDto> getBySpecification(RequestParams params) {
-        List<GiftCertificate> certificates = getCertificatesBySpecification(params);
-        return certificates
-                .stream()
-                .map(certificate -> modelMapper.map(certificate, GiftCertificateTagDto.class))
-                .collect(Collectors.toList());
+    public Page<GiftCertificateTagDto> getBySpecification(RequestParams params, Pageable pageable) {
+        Page<GiftCertificate> certificates = getCertificatesBySpecification(params, pageable);
+        return certificates.map(certificate -> modelMapper.map(certificate, GiftCertificateTagDto.class));
     }
 
     @Override
-    public List<GiftCertificate> getCertificatesBySpecification(RequestParams params) {
+    public Page<GiftCertificate> getCertificatesBySpecification(RequestParams params, Pageable pageable) {
         Specification<GiftCertificate> specification = getGiftCertificateSpecification(params);
-        List<GiftCertificate> certificates = certificateRepository.findBySpecification(specification);
-        return certificates;
+        return certificateRepository.findBySpecification(specification, pageable);
     }
 
-    @Override
-    public List<GiftCertificate> getActiveCertificatesBySpecification(RequestParams params) {
-        Specification<GiftCertificate> specification = getGiftCertificateSpecification(params);
-        List<GiftCertificate> certificates = certificateRepository.findBySpecification(specification);
-        return certificates;
-    }
+//    @Override
+//    public List<GiftCertificate> getActiveCertificatesBySpecification(RequestParams params) {
+//        Specification<GiftCertificate> specification = getGiftCertificateSpecification(params);
+//        List<GiftCertificate> certificates = certificateRepository.findBySpecification(specification);
+//        return certificates;
+//    }
 
     private Specification<GiftCertificate> getGiftCertificateSpecification(RequestParams params) {
         List<Specification<GiftCertificate>> specifications = new ArrayList<>();

@@ -1,13 +1,14 @@
 package com.epam.esm.service.dto.order;
 
 import com.epam.esm.persistence.entity.enums.OrderStatus;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
 
-public class OrderCertificatesDto {
+public class OrderCertificatesDto  extends RepresentationModel<OrderCertificatesDto> {
     private Long id;
     private LocalDateTime createDate;
     private BigDecimal totalPrice;

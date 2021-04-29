@@ -2,11 +2,11 @@ package com.epam.esm.service.service;
 
 import com.epam.esm.service.dto.user.UserInfoDto;
 import com.epam.esm.service.dto.user.UserOrderDto;
-
-import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface UserService {
     UserOrderDto getById(Long id);
 
-    Set<UserInfoDto> getAll();
+    Page<UserInfoDto> getAll(Pageable pageable);
 }

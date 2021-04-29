@@ -6,7 +6,11 @@ import com.epam.esm.persistence.model.specification.CertificatesStatusSpecificat
 import com.epam.esm.persistence.model.specification.FindByIdInSpecification;
 import com.epam.esm.persistence.repository.GiftCertificateRepository;
 import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,8 +45,8 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
     public Optional<GiftCertificate> findById(Long id) {
         Specification<GiftCertificate> byId = new FindByIdInSpecification<>(List.of(id));
         Specification<GiftCertificate> specification = byId.and(new CertificatesStatusSpecification(GiftCertificateStatus.ACTIVE));
-        List<GiftCertificate> certificate = findBySpecification(specification);
-        GiftCertificate giftCertificate = DataAccessUtils.singleResult(certificate);
+        Page<GiftCertificate> certificate = findBySpecification(specification, Pageable.unpaged());
+        GiftCertificate giftCertificate = DataAccessUtils.singleResult(certificate.getContent());
         return Optional.ofNullable(giftCertificate);
     }
 
@@ -76,14 +80,37 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
     //        return 0;
 
     @Override
-    public List<GiftCertificate> findBySpecification(Specification<GiftCertificate> mySpecification) {
+    public Page<GiftCertificate> findBySpecification(Specification<GiftCertificate> mySpecification, Pageable pageable) {
         CriteriaBuilder cb = manager.getCriteriaBuilder();
         CriteriaQuery<GiftCertificate> query = cb.createQuery(GiftCertificate.class);
         Root<GiftCertificate> giftCertificateFrom = query.from(GiftCertificate.class);
         Predicate predicate = mySpecification.toPredicate(giftCertificateFrom, query, cb);
         query.where(predicate);
-        TypedQuery<GiftCertificate> exec = manager.createQuery(query);
-        return exec.getResultList();
+        TypedQuery<GiftCertificate> exec = getPagedQuery(pageable, cb, query, giftCertificateFrom);
+        Long lastPage = getLastPage(cb);
+        List<GiftCertificate> content = exec.getResultList();
+        Page<GiftCertificate> page = new PageImpl<>(content, pageable,lastPage);
+        return page;
+    }
+
+    private Long getLastPage(CriteriaBuilder cb) {
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        countQuery.select(cb.count(countQuery.from(GiftCertificate.class)));
+        return manager.createQuery(countQuery).getSingleResult();
+    }
+
+
+    private TypedQuery<GiftCertificate> getPagedQuery(Pageable pageable, CriteriaBuilder cb, CriteriaQuery<GiftCertificate> query, Root<GiftCertificate> from) {
+        if (pageable.isPaged()) {
+            long pageNumber = pageable.getOffset();
+            int pageSize = pageable.getPageSize();
+            query.orderBy((QueryUtils.toOrders(pageable.getSort(), from, cb)));
+            TypedQuery<GiftCertificate> exec = manager.createQuery(query);
+            exec.setFirstResult(Math.toIntExact(pageNumber));
+            exec.setMaxResults((pageSize));
+            return exec;
+        }
+        return manager.createQuery(query);
     }
 
 //    private List<Order> getOrders(MySpecification mySpecification, CriteriaBuilder cb, Root<GiftCertificate> fromCertificate) {

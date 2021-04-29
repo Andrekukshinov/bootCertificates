@@ -3,6 +3,8 @@ package com.epam.esm.service.service;
 import com.epam.esm.persistence.entity.Tag;
 import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.exception.ValidationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Set;
 
@@ -38,7 +40,7 @@ public interface TagService {
      * Method for returning list of all tag dtos that are present in the system
      * @return list of tag dtos
      */
-    Set<TagDto> getAll();
+    Page<TagDto> getAll(Pageable pageable);
 
     Set<Tag> saveAll(Set<Tag> tagToBeSaved);
 

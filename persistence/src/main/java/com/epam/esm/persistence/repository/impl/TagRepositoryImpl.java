@@ -3,6 +3,10 @@ package com.epam.esm.persistence.repository.impl;
 import com.epam.esm.persistence.entity.Tag;
 import com.epam.esm.persistence.repository.TagRepository;
 import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +18,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,7 +31,8 @@ public class TagRepositoryImpl implements TagRepository {
             " SELECT tags.id, tags.name FROM tags" +
             " INNER JOIN tags_gift_certificates tgc ON tags.id = tgc.tag_id" +
             " WHERE tags.id = :id";
-    private static final String QRY = "SELECT tg.name, tg.id, SUM(oc.quantity) total_amount\n" +
+    private static final String FIND_MOST_POPULAR_TOP_USER_TAG =
+            "SELECT tg.name, tg.id, SUM(oc.quantity) total_amount\n" +
             "FROM tags AS tg\n" +
             "         INNER JOIN tags_gift_certificates tgc ON tg.id = tgc.tag_id\n" +
             "         INNER JOIN gift_certificates gc ON tgc.gift_certificate_id = gc.id\n" +
@@ -98,13 +103,37 @@ public class TagRepositoryImpl implements TagRepository {
     }
 
     @Override
-    public Set<Tag> findAll() {
+    public Page<Tag> findAll(Pageable pageable) {
         CriteriaBuilder cb = manager.getCriteriaBuilder();
         CriteriaQuery<Tag> query = cb.createQuery(Tag.class);
         Root<Tag> from = query.from(Tag.class);
         query.select(from);
-        TypedQuery<Tag> exec = manager.createQuery(query);
-        return new HashSet<>(exec.getResultList());
+
+        TypedQuery<Tag> exec = getPagedQuery(pageable, cb, query, from);
+
+        Long lastPage = getLastPage(cb);
+
+        List<Tag> tags = exec.getResultList();
+        return new PageImpl<>(tags, pageable, lastPage);
+    }
+
+    private Long getLastPage(CriteriaBuilder cb) {
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        countQuery.select(cb.count(countQuery.from(Tag.class)));
+        return manager.createQuery(countQuery).getSingleResult();
+    }
+
+    private TypedQuery<Tag> getPagedQuery(Pageable pageable, CriteriaBuilder cb, CriteriaQuery<Tag> query, Root<Tag> root) {
+        if (pageable.isPaged()) {
+            long pageNumber = pageable.getOffset();
+            int pageSize = pageable.getPageSize();
+            query.orderBy((QueryUtils.toOrders(pageable.getSort(), root, cb)));
+            TypedQuery<Tag> exec = manager.createQuery(query);
+            exec.setFirstResult(Math.toIntExact(pageNumber));
+            exec.setMaxResults((pageSize));
+            return exec;
+        }
+        return manager.createQuery(query);
     }
 
     @Override
@@ -113,8 +142,9 @@ public class TagRepositoryImpl implements TagRepository {
         return tagsToBeSaved;
     }
 
+    @Override
     public Tag getTopUserMostPopularTag() {
-        Query nativeQuery = manager.createNativeQuery(QRY, Tag.class);
+        Query nativeQuery = manager.createNativeQuery(FIND_MOST_POPULAR_TOP_USER_TAG, Tag.class);
         return  (Tag)DataAccessUtils.singleResult(nativeQuery.getResultList());
     }
 }

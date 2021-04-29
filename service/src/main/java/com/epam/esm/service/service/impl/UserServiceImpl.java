@@ -8,11 +8,11 @@ import com.epam.esm.service.exception.EntityNotFoundException;
 import com.epam.esm.service.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -35,8 +35,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Set<UserInfoDto> getAll() {
-        Set<User> all = userRepository.findAll();
-        return all.stream().map(user -> mapper.map(user, UserInfoDto.class)).collect(Collectors.toSet());
+    public Page<UserInfoDto> getAll(Pageable pageable) {
+        Page<User> all = userRepository.findAll(pageable);
+        return all.map(user -> mapper.map(user, UserInfoDto.class));
     }
 }

@@ -2,8 +2,8 @@ package com.epam.esm.service.service;
 
 import com.epam.esm.service.dto.order.OrderCertificatesDto;
 import com.epam.esm.service.dto.order.OrderDetailsDto;
-
-import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface OrderService {
     OrderCertificatesDto save(OrderCertificatesDto orderCertificatesDto);
@@ -12,5 +12,5 @@ public interface OrderService {
 
     OrderCertificatesDto getUserOrderById(Long userId, Long orderId);
 
-    Set<OrderDetailsDto> getAllUserOrders(Long userId);
+    Page<OrderDetailsDto> getAllUserOrders(Long userId, Pageable pageable);
 }

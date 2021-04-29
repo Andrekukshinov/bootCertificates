@@ -18,6 +18,8 @@ import com.epam.esm.service.service.OrderService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -128,7 +130,7 @@ public class OrderServiceImpl implements OrderService {
                 .builder()
                 .setIds(ids)
                 .build();
-        return certificateService.getCertificatesBySpecification(requestParams);
+        return certificateService.getCertificatesBySpecification(requestParams, Pageable.unpaged()).getContent();
 
     }
 
@@ -142,19 +144,17 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderCertificatesDto getUserOrderById(Long userId, Long orderId) {
         Specification<Order> specification = new OrderByUserIdSpecification(userId).and(new FindByIdInSpecification<>(List.of(orderId)));
-        Optional<Order> orderOptional = Optional.ofNullable(DataAccessUtils.singleResult(repository.find(specification)));
+        Order nullableValue = DataAccessUtils.singleResult(repository.find(specification, Pageable.unpaged()).getContent());
+        Optional<Order> orderOptional = Optional.ofNullable(nullableValue);
         //todo ask
         Order order = orderOptional.orElseThrow(() -> new EntityNotFoundException(String.format("order (id=%s), of user (id=%s), bot found", orderId, userId)));
         return mapper.map(order, OrderCertificatesDto.class);
     }
 
     @Override
-    public Set<OrderDetailsDto> getAllUserOrders(Long userId) {
+    public Page<OrderDetailsDto> getAllUserOrders(Long userId, Pageable pageable) {
         Specification<Order> getAllSpec = new FindUserOrdersSpecification(userId);
-        Set<Order> orders = repository.find(getAllSpec);
-        return orders
-                .stream()
-                .map(order -> mapper.map(order, OrderDetailsDto.class))
-                .collect(Collectors.toSet());
+        Page<Order> orders = repository.find(getAllSpec, pageable);
+        return orders.map(order -> mapper.map(order, OrderDetailsDto.class));
     }
 }

@@ -1,9 +1,9 @@
 package com.epam.esm.persistence.repository;
 
 import com.epam.esm.persistence.entity.User;
-
-import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface UserRepository extends ReadOperationRepository<User> {
-    Set<User> findAll();
+    Page<User> findAll(Pageable pageable);
 }
