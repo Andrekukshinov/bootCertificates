@@ -1,21 +1,35 @@
 package com.epam.esm.service.dto.certificate;
 
 import com.epam.esm.service.dto.TagDto;
+import com.epam.esm.service.valiation.SaveGroup;
+import com.epam.esm.service.valiation.UpdateGroup;
 import org.springframework.hateoas.RepresentationModel;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Null;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
 
 public class GiftCertificateTagDto extends RepresentationModel<GiftCertificateTagDto> {
+    @Null(message = "id must not be specified", groups = SaveGroup.class)
+    @Min(value = 1, message = "id must be positive", groups = UpdateGroup.class)
+//    @NotNull(message = "id must be specified", groups = UpdateGroup.class)
     private Long id;
     private LocalDateTime createDate;
     private LocalDateTime lastUpdateDate;
-    private String name;
+    @NotBlank(message = "description must be specified")
     private String description;
+    @NotBlank(message = "name must be specified")
+    private String name;
+    @Min(value = 0, message = "price cannot be negative")
     private BigDecimal price;
+    @Min(value = 0, message = "duration cannot be negative")
     private Integer duration;
+    @Valid
     private Set<TagDto> tags;
 
     public GiftCertificateTagDto() {

@@ -7,11 +7,13 @@ import com.epam.esm.web.model.BindExceptionModel;
 import com.epam.esm.web.model.ExceptionModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -54,6 +56,28 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         LOGGER.error(ex.getMessage(), ex);
         ExceptionModel body = new ExceptionModel(ex.getMessage(), ENTITY_EXISTS_EXCEPTION);
         return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.CONFLICT, request);
+    }
+
+//    @ExceptionHandler(value = MethodArgumentNotValidException.class)
+//    protected ResponseEntity<Object> handleConflict(MethodArgumentNotValidException ex, WebRequest request) {
+//        LOGGER.error(ex.getMessage(), ex);
+//        ExceptionModel body = new ExceptionModel(ex.getMessage(), ENTITY_EXISTS_EXCEPTION);
+//        return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.CONFLICT, request);
+//    }
+
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+        LOGGER.error(ex.getMessage(), ex);
+        String first = ex
+                .getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .findFirst()
+                .orElse("validation failed");
+        ExceptionModel body = new ExceptionModel(first, BAD_REQUEST);
+        return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
     @ExceptionHandler(value = ValidationException.class)

@@ -54,7 +54,6 @@ public class OrderServiceImpl implements OrderService {
     public OrderCertificatesDto save(OrderCertificatesDto orderCertificatesDto) {
         Set<OrderCertificateUnitDto> orderCertificates = orderCertificatesDto.getOrderCertificates();
         List<Long> ids = getCertificatesIds(orderCertificates);
-
         List<OrderCertificate> toBeSaved = getOrderCertificatesWithExistingCertificates(orderCertificates, ids);
 
         Order saved = saveOrder(orderCertificatesDto, toBeSaved);

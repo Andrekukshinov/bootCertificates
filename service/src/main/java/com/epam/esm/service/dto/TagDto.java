@@ -1,12 +1,17 @@
 package com.epam.esm.service.dto;
 
+import com.epam.esm.service.valiation.SaveGroup;
 import org.springframework.hateoas.RepresentationModel;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Null;
 import java.util.Objects;
 
 public class TagDto extends RepresentationModel<TagDto> {
 
+    @Null(message = "id should not be specified", groups = SaveGroup.class)
     private Long id;
+    @NotBlank()
     private String name;
 
     public TagDto() {

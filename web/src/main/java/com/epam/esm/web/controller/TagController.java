@@ -3,6 +3,7 @@ package com.epam.esm.web.controller;
 import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.exception.ValidationException;
 import com.epam.esm.service.service.TagService;
+import com.epam.esm.service.valiation.SaveGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,7 +38,7 @@ public class TagController {
     }
 
     @PostMapping
-    public ResponseEntity<TagDto> saveTag(@RequestBody TagDto tag) throws ValidationException {
+    public ResponseEntity<TagDto> saveTag(@Validated(SaveGroup.class) @RequestBody TagDto tag) throws ValidationException {
         TagDto saved = tagService.save(tag);
         tag.add(linkTo(methodOn(TagController.class).getTagById(tag.getId())).withRel("tag_link"));
         tag.add(linkTo(methodOn(TagController.class).getAll(null)).withRel("all"));

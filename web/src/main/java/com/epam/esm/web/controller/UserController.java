@@ -34,7 +34,6 @@ public class UserController {
     private final PagedResourcesAssembler<UserInfoDto> userInfoAssembler;
     private final PagedResourcesAssembler<OrderDetailsDto> orderAssembler;
 
-
     @Autowired
     public UserController(UserService service, OrderService orderService, PagedResourcesAssembler<UserInfoDto> userInfoAssembler, PagedResourcesAssembler<OrderDetailsDto> orderAssembler) {
         this.service = service;

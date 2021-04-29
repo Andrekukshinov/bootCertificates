@@ -4,6 +4,8 @@ import com.epam.esm.service.dto.certificate.GiftCertificateTagDto;
 import com.epam.esm.service.exception.ValidationException;
 import com.epam.esm.service.model.RequestParams;
 import com.epam.esm.service.service.GiftCertificateService;
+import com.epam.esm.service.valiation.SaveGroup;
+import com.epam.esm.service.valiation.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +14,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -51,7 +54,7 @@ public class GiftCertificateController {
     }
 
     @PostMapping
-    public ResponseEntity<GiftCertificateTagDto> saveGiftCertificate(@RequestBody GiftCertificateTagDto certificate) throws ValidationException {
+    public ResponseEntity<GiftCertificateTagDto> saveGiftCertificate(@Validated(SaveGroup.class) @RequestBody GiftCertificateTagDto certificate) throws ValidationException {
         GiftCertificateTagDto saved = certificateService.save(certificate);
         saved.add(linkTo(methodOn(GiftCertificateController.class).getGiftCertificateById(saved.getId())).withRel("this"));
         addMappingToAll(saved);
@@ -68,7 +71,7 @@ public class GiftCertificateController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GiftCertificateTagDto> updateCertificate(@RequestBody GiftCertificateTagDto certificateDto, @PathVariable Long id) throws ValidationException {
+    public ResponseEntity<GiftCertificateTagDto> updateCertificate(@Validated(UpdateGroup.class) @RequestBody GiftCertificateTagDto certificateDto, @PathVariable Long id) throws ValidationException {
         GiftCertificateTagDto updated = certificateService.updateCertificate(certificateDto, id);
         updated.add((linkTo(methodOn(GiftCertificateController.class).getGiftCertificateById(id)).withRel("this")));
         addMappingToAll(updated);
