@@ -56,5 +56,6 @@ public interface GiftCertificateService {
     Page<GiftCertificateTagDto> getBySpecification(RequestParams params, Pageable pageable);
 
     Page<GiftCertificate> getCertificatesBySpecification(RequestParams params, Pageable pageable);
-//    List<GiftCertificate> getActiveCertificatesBySpecification(RequestParams params);
+
+    GiftCertificateTagDto patchUpdate(Long certificateId, GiftCertificateTagDto toBeUpdated) throws ValidationException;
 }

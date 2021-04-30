@@ -6,7 +6,6 @@ import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.exception.EntityAlreadyExistsException;
 import com.epam.esm.service.exception.EntityNotFoundException;
 import com.epam.esm.service.exception.ValidationException;
-import com.epam.esm.service.validation.SaveValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -21,7 +20,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,8 +39,6 @@ class TagServiceImplTest {
 
     @Mock
     private ModelMapper modelMapper;
-    @Mock
-    private SaveValidator<TagDto> updateValidator;
 
     @InjectMocks
     private TagServiceImpl service;
@@ -66,7 +62,6 @@ class TagServiceImplTest {
     @Test
     void testSaveTagShouldThrowValidationExceptionWhenInvalidObject() throws ValidationException {
         when(tagRepository.findByName(any())).thenReturn(Optional.empty());
-        doThrow(ValidationException.class).when(updateValidator).validate(any());
         when(modelMapper.map(any(), any())).thenReturn(PEOPLE_TAG);
 
         assertThrows(ValidationException.class, () -> service.save(PEOPLE_TAG_DTO));

@@ -109,12 +109,16 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificateRepository.findBySpecification(specification, pageable);
     }
 
-//    @Override
-//    public List<GiftCertificate> getActiveCertificatesBySpecification(RequestParams params) {
-//        Specification<GiftCertificate> specification = getGiftCertificateSpecification(params);
-//        List<GiftCertificate> certificates = certificateRepository.findBySpecification(specification);
-//        return certificates;
-//    }
+    @Override
+    @Transactional
+    public GiftCertificateTagDto patchUpdate(Long certificateId, GiftCertificateTagDto toBeUpdated) throws ValidationException {
+        certificateRepository.findById(certificateId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format(WRONG_CERTIFICATE, certificateId)));
+        GiftCertificate giftCertificate = modelMapper.map(toBeUpdated, GiftCertificate.class);
+        saveCertificateTags(giftCertificate);
+        GiftCertificate updated = certificateRepository.partialUpdate(certificateId, giftCertificate);
+        return modelMapper.map(updated, GiftCertificateTagDto.class);
+    }
 
     private Specification<GiftCertificate> getGiftCertificateSpecification(RequestParams params) {
         List<Specification<GiftCertificate>> specifications = new ArrayList<>();

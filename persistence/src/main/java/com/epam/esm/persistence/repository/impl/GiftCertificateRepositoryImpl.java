@@ -1,7 +1,9 @@
 package com.epam.esm.persistence.repository.impl;
 
 import com.epam.esm.persistence.entity.GiftCertificate;
+import com.epam.esm.persistence.entity.Tag;
 import com.epam.esm.persistence.entity.enums.GiftCertificateStatus;
+import com.epam.esm.persistence.exception.SortingException;
 import com.epam.esm.persistence.model.specification.CertificatesStatusSpecification;
 import com.epam.esm.persistence.model.specification.FindByIdInSpecification;
 import com.epam.esm.persistence.repository.GiftCertificateRepository;
@@ -11,6 +13,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.query.QueryUtils;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,9 +25,12 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 
 @Repository
@@ -70,14 +76,44 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
         return certificate;
     }
 
-    // for patch
-    //GiftCertificate dbCertificate = manager.find(GiftCertificate.class, certificate.getId());
-    //        manager.detach(dbCertificate);
-    //        LocalDateTime createDate = certificate.getCreateDate();
-    //        if (Objects.nonNull(createDate)){
-    //            dbCertificate.setCreateDate(createDate);
-    //        }
-    //        return 0;
+    @Override
+    public GiftCertificate partialUpdate(Long certificateId, GiftCertificate toBeUpdated) {
+        GiftCertificate found = manager.find(GiftCertificate.class, certificateId);
+        setFieldsToUpdate(toBeUpdated, found);
+        manager.merge(found);
+        return found;
+    }
+
+    private void setFieldsToUpdate(GiftCertificate source, GiftCertificate target) {
+        LocalDateTime createDate = source.getCreateDate();
+        if (Objects.nonNull(createDate)){
+            target.setCreateDate(createDate);
+        }
+        LocalDateTime lastUpdateDate = source.getLastUpdateDate();
+        if (Objects.nonNull(lastUpdateDate)){
+            target.setLastUpdateDate(lastUpdateDate);
+        }
+        Set<Tag> tags = source.getTags();
+        if (Objects.nonNull(tags)){
+            target.setTags(tags);
+        }
+        String name = source.getName();
+        if (Objects.nonNull(name)){
+            target.setName(name);
+        }
+        String description = source.getDescription();
+        if (Objects.nonNull(description)){
+            target.setDescription(description);
+        }
+        BigDecimal price = source.getPrice();
+        if (Objects.nonNull(price)){
+            target.setPrice(price);
+        }
+        GiftCertificateStatus status = source.getStatus();
+        if (Objects.nonNull(status)){
+            target.setStatus(status);
+        }
+    }
 
     @Override
     public Page<GiftCertificate> findBySpecification(Specification<GiftCertificate> mySpecification, Pageable pageable) {
@@ -104,7 +140,11 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
         if (pageable.isPaged()) {
             long pageNumber = pageable.getOffset();
             int pageSize = pageable.getPageSize();
-            query.orderBy((QueryUtils.toOrders(pageable.getSort(), from, cb)));
+            try {
+                query.orderBy((QueryUtils.toOrders(pageable.getSort(), from, cb)));
+            } catch (PropertyReferenceException e) {
+                throw new SortingException(e.getMessage());
+            }
             TypedQuery<GiftCertificate> exec = manager.createQuery(query);
             exec.setFirstResult(Math.toIntExact(pageNumber));
             exec.setMaxResults((pageSize));

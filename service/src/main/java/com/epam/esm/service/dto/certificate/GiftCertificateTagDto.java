@@ -23,21 +23,21 @@ public class GiftCertificateTagDto extends RepresentationModel<GiftCertificateTa
     private LocalDateTime createDate;
     private LocalDateTime lastUpdateDate;
 
-    @NotNull(message = "certificate description must be specified")
-    @NotBlank(message = "certificate description must be specified")
-    @Size(max = 255, message = "certificate description max length must be less than 256 symbol")
+    @NotNull(message = "certificate description must be specified", groups = {UpdateGroup.class, SaveGroup.class})
+    @NotBlank(message = "certificate description must be specified", groups = {UpdateGroup.class, SaveGroup.class})
+    @Size(max = 255, min = 1, message = "certificate description max length must be less than 256 symbol and more than 1!")
     private String description;
 
-    @NotBlank(message = "certificate name must be specified")
-    @Size(max = 50, message = "certificate name max length must be less than 51 symbol")
+    @NotBlank(message = "certificate name must be specified", groups = {UpdateGroup.class, SaveGroup.class})
+    @Size(max = 50, min = 1, message = "certificate name max length must be less than 51 symbol and more than 0!")
     private String name;
 
     @Min(value = 0, message = "certificate price cannot be negative")
-    @NotNull(message = "certificate price must be specified")
+    @NotNull(message = "certificate price must be specified", groups = {UpdateGroup.class, SaveGroup.class})
     private BigDecimal price;
 
     @Min(value = 0, message = "certificate duration cannot be negative")
-    @NotNull(message = "certificate duration must be specified")
+    @NotNull(message = "certificate duration must be specified", groups = {UpdateGroup.class, SaveGroup.class})
     private Integer duration;
 
     private Set<TagDto> tags;

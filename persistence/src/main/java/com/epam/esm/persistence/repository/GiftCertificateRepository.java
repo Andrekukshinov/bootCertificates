@@ -26,4 +26,6 @@ public interface GiftCertificateRepository extends CreateDeleteRepository<GiftCe
      * @return list of found certificates
      */
     Page<GiftCertificate> findBySpecification(Specification<GiftCertificate> mySpecification, Pageable pageable);
+
+    GiftCertificate partialUpdate(Long certificateId, GiftCertificate toBeUpdated);
 }

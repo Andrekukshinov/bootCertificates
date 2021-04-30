@@ -1,5 +1,6 @@
 package com.epam.esm.web.handilng;
 
+import com.epam.esm.persistence.exception.SortingException;
 import com.epam.esm.service.exception.EntityAlreadyExistsException;
 import com.epam.esm.service.exception.EntityNotFoundException;
 import com.epam.esm.service.exception.ValidationException;
@@ -7,12 +8,15 @@ import com.epam.esm.web.model.BindExceptionModel;
 import com.epam.esm.web.model.ExceptionModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -58,14 +62,6 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.CONFLICT, request);
     }
 
-//    @ExceptionHandler(value = MethodArgumentNotValidException.class)
-//    protected ResponseEntity<Object> handleConflict(MethodArgumentNotValidException ex, WebRequest request) {
-//        LOGGER.error(ex.getMessage(), ex);
-//        ExceptionModel body = new ExceptionModel(ex.getMessage(), ENTITY_EXISTS_EXCEPTION);
-//        return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.CONFLICT, request);
-//    }
-
-
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         LOGGER.error(ex.getMessage(), ex);
@@ -80,8 +76,39 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
+    @Override
+    protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+        LOGGER.error(ex.getMessage(), ex);
+        ExceptionModel body = new ExceptionModel(ex.getMessage(), BAD_REQUEST);
+        return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
     @ExceptionHandler(value = ValidationException.class)
     protected ResponseEntity<Object> handleConflict(ValidationException ex, WebRequest request) {
+        LOGGER.error(ex.getMessage(), ex);
+        ExceptionModel body = new ExceptionModel(ex.getMessage(), BAD_REQUEST);
+        return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler(value = SortingException.class)
+    protected ResponseEntity<Object> handleConflict(SortingException ex, WebRequest request) {
+        LOGGER.error(ex.getMessage(), ex);
+        ExceptionModel body = new ExceptionModel(ex.getMessage(), BAD_REQUEST);
+        return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+        LOGGER.error(ex.getMessage(), ex);
+        //todo ask
+        String message = ex.getCause().getMessage();
+        System.out.println(message);
+        ExceptionModel body = new ExceptionModel(ex.getCause().getMessage(), BAD_REQUEST);
+        return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         LOGGER.error(ex.getMessage(), ex);
         ExceptionModel body = new ExceptionModel(ex.getMessage(), BAD_REQUEST);
         return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
@@ -103,6 +130,5 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 }
-//todo 29.04.2021 validation, patch(read about & implement), test verify,
-// + new unit tests, handle required exceptions
+//todo 29.04.2021 test verify, new unit tests
 //todo 29.04.2021 put much data to db, data audit + java docks

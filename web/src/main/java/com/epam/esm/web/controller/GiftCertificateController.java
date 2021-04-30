@@ -4,6 +4,7 @@ import com.epam.esm.service.dto.certificate.GiftCertificateTagDto;
 import com.epam.esm.service.exception.ValidationException;
 import com.epam.esm.service.model.RequestParams;
 import com.epam.esm.service.service.GiftCertificateService;
+import com.epam.esm.service.valiation.PatchGroup;
 import com.epam.esm.service.valiation.SaveGroup;
 import com.epam.esm.service.valiation.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -76,7 +78,14 @@ public class GiftCertificateController {
         updated.add((linkTo(methodOn(GiftCertificateController.class).getGiftCertificateById(id)).withRel("this")));
         addMappingToAll(updated);
         return ResponseEntity.ok(updated);
+    }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<GiftCertificateTagDto> patchCertificate(@Validated(PatchGroup.class) @RequestBody GiftCertificateTagDto certificateDto, @PathVariable Long id) throws ValidationException {
+        GiftCertificateTagDto updated = certificateService.patchUpdate(id, certificateDto);
+        updated.add((linkTo(methodOn(GiftCertificateController.class).getGiftCertificateById(id)).withRel("this")));
+        addMappingToAll(updated);
+        return ResponseEntity.ok(updated);
     }
 
     @GetMapping()
