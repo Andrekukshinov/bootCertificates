@@ -9,7 +9,7 @@ import com.epam.esm.service.exception.EntityNotFoundException;
 import com.epam.esm.service.exception.InvalidEntityException;
 import com.epam.esm.service.exception.ValidationException;
 import com.epam.esm.service.service.TagService;
-import com.epam.esm.service.validation.SaveValidator;
+import com.epam.esm.service.validation.Validator;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -30,19 +30,18 @@ public class TagServiceImpl implements TagService {
 
     private final TagRepository tagRepository;
     private final ModelMapper modelMapper;
-    private final SaveValidator<TagDto> saveValidator;
+    private final Validator<Tag> validator;
 
     @Autowired
-    public TagServiceImpl(TagRepository tagRepository, ModelMapper modelMapper, SaveValidator<TagDto> saveValidator) {
+    public TagServiceImpl(TagRepository tagRepository, ModelMapper modelMapper, Validator<Tag> validator) {
         this.tagRepository = tagRepository;
 
         this.modelMapper = modelMapper;
-        this.saveValidator = saveValidator;
+        this.validator = validator;
     }
 
     @Override
-    public TagDto save(TagDto tagDto) throws ValidationException {
-        saveValidator.validate(tagDto);
+    public TagDto save(TagDto tagDto) {
         Tag tag = modelMapper.map(tagDto, Tag.class);
         String name = tag.getName();
         Optional<Tag> tagOptional = tagRepository.findByName(name);
@@ -80,9 +79,10 @@ public class TagServiceImpl implements TagService {
 
     @Override
     @Transactional
-    public Set<Tag> saveAll(Set<Tag> tagToBeSaved) {
+    public Set<Tag> saveAll(Set<Tag> tagToBeSaved) throws ValidationException {
         Set<Tag> result = new HashSet<>();
         for (Tag tag : tagToBeSaved) {
+            validator.validate(tag);
             addSavedTag(result, tag);
         }
         return result;

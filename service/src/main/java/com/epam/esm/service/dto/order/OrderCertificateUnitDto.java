@@ -2,9 +2,19 @@ package com.epam.esm.service.dto.order;
 
 import com.epam.esm.service.dto.certificate.GiftCertificatesNoTagDto;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
+
 public class OrderCertificateUnitDto {
+    @Null(message = "id must be null")
     private Long id;
+    @NotNull(message = "certificate must not be null")
+    @Valid
     private GiftCertificatesNoTagDto orderCertificate;
+    @Min(value = 1, message = "certificate amount cannot be less than 1!")
+    @NotNull(message = "certificate quantity must not be null")
     private Integer quantity;
 
     public OrderCertificateUnitDto(Long id, GiftCertificatesNoTagDto orderCertificate, Integer quantity) {

@@ -1,9 +1,13 @@
 package com.epam.esm.service.dto.certificate;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class GiftCertificatesNoTagDto {
+    @NotNull(message = "certificate id cannot be null")
+    @Min(value = 1, message = "certificate id cannot be less than 0!")
     private Long id;
     private LocalDateTime createDate;
     private LocalDateTime lastUpdateDate;

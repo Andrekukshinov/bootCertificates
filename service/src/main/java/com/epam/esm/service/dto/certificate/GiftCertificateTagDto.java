@@ -5,31 +5,41 @@ import com.epam.esm.service.valiation.SaveGroup;
 import com.epam.esm.service.valiation.UpdateGroup;
 import org.springframework.hateoas.RepresentationModel;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
 
 public class GiftCertificateTagDto extends RepresentationModel<GiftCertificateTagDto> {
-    @Null(message = "id must not be specified", groups = SaveGroup.class)
-    @Min(value = 1, message = "id must be positive", groups = UpdateGroup.class)
-//    @NotNull(message = "id must be specified", groups = UpdateGroup.class)
+    @Null(message = "certificate id must not be specified", groups = SaveGroup.class)
+    @Min(value = 1, message = "certificate id must be positive", groups = UpdateGroup.class)
     private Long id;
+
     private LocalDateTime createDate;
     private LocalDateTime lastUpdateDate;
-    @NotBlank(message = "description must be specified")
+
+    @NotNull(message = "certificate description must be specified")
+    @NotBlank(message = "certificate description must be specified")
+    @Size(max = 255, message = "certificate description max length must be less than 256 symbol")
     private String description;
-    @NotBlank(message = "name must be specified")
+
+    @NotBlank(message = "certificate name must be specified")
+    @Size(max = 50, message = "certificate name max length must be less than 51 symbol")
     private String name;
-    @Min(value = 0, message = "price cannot be negative")
+
+    @Min(value = 0, message = "certificate price cannot be negative")
+    @NotNull(message = "certificate price must be specified")
     private BigDecimal price;
-    @Min(value = 0, message = "duration cannot be negative")
+
+    @Min(value = 0, message = "certificate duration cannot be negative")
+    @NotNull(message = "certificate duration must be specified")
     private Integer duration;
-    @Valid
+
     private Set<TagDto> tags;
 
     public GiftCertificateTagDto() {

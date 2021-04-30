@@ -18,7 +18,7 @@ public interface TagService {
      * @param tag dto to be validated and performed logics with
      * @throws ValidationException in case of validation error occur
      */
-    TagDto save(TagDto tag) throws ValidationException;
+    TagDto save(TagDto tag);
 
     /**
      * Method that deletes object from system
@@ -42,7 +42,7 @@ public interface TagService {
      */
     Page<TagDto> getAll(Pageable pageable);
 
-    Set<Tag> saveAll(Set<Tag> tagToBeSaved);
+    Set<Tag> saveAll(Set<Tag> tagToBeSaved) throws ValidationException;
 
     TagDto getTopUserMostPopularTag();
 }

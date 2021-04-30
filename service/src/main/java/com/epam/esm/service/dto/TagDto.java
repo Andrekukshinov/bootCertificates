@@ -5,13 +5,15 @@ import org.springframework.hateoas.RepresentationModel;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Null;
+import javax.validation.constraints.Size;
 import java.util.Objects;
 
 public class TagDto extends RepresentationModel<TagDto> {
 
-    @Null(message = "id should not be specified", groups = SaveGroup.class)
+    @Null(message = "tag id should not be specified", groups = SaveGroup.class)
     private Long id;
-    @NotBlank()
+    @NotBlank(message = "tag name must be specified")
+    @Size(max = 50, message = "name max length must be less than 51 symbol")
     private String name;
 
     public TagDto() {

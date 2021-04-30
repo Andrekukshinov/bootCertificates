@@ -3,17 +3,25 @@ package com.epam.esm.service.dto.order;
 import com.epam.esm.persistence.entity.enums.OrderStatus;
 import org.springframework.hateoas.RepresentationModel;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
 
-public class OrderCertificatesDto  extends RepresentationModel<OrderCertificatesDto> {
+public class OrderCertificatesDto extends RepresentationModel<OrderCertificatesDto> {
+    @Null(message = "order id must not be specified")
     private Long id;
     private LocalDateTime createDate;
     private BigDecimal totalPrice;
     private OrderStatus status;
     private Long userId;
+    @Valid
+    @NotEmpty(message = "certificate amount must be > 1!")
+    @NotNull(message = "certificates must be specified")
     private Set<OrderCertificateUnitDto> orderCertificates;
 
     public OrderCertificatesDto() {

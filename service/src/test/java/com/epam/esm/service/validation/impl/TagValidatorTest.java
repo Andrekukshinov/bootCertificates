@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class TagDtoSaveValidatorTest {
+class TagValidatorTest {
 
 
     private static Stream<Arguments> dataProvider() {
@@ -24,6 +24,6 @@ class TagDtoSaveValidatorTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     void testValidateShouldThrowValidationExceptionWhenInvalid(TagDto tagDto, String msg) {
-        assertThrows(ValidationException.class, () -> new TagDtoSaveValidator().validate(tagDto), msg);
+        assertThrows(ValidationException.class, () -> new TagValidator().validate(tagDto), msg);
     }
 }

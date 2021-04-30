@@ -13,6 +13,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -63,11 +65,9 @@ public class GiftCertificateController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCertificate(@PathVariable(ID) Long id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCertificate(@PathVariable(ID) Long id) {
         certificateService.deleteCertificate(id);
-        RepresentationModel<?> certificate = new RepresentationModel<>();
-        addMappingToAll(certificate);
-        return ResponseEntity.ok(certificate);
     }
 
     @PutMapping("/{id}")

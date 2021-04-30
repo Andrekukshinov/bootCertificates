@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -69,7 +71,7 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/orders")
-    public ResponseEntity<OrderCertificatesDto> saveUserOrder(@PathVariable Long userId, @RequestBody OrderCertificatesDto orderCertificatesDto) throws ValidationException {
+    public ResponseEntity<OrderCertificatesDto> saveUserOrder(@PathVariable Long userId, @Valid @RequestBody OrderCertificatesDto orderCertificatesDto) throws ValidationException {
         orderCertificatesDto.setUserId(userId);
         OrderCertificatesDto saved = orderService.save(orderCertificatesDto);
         saved.add(linkTo(methodOn(UserController.class).findById(userId)).withRel("this_user"));

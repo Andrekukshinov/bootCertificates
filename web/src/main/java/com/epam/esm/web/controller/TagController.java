@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.hateoas.RepresentationModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -40,26 +41,28 @@ public class TagController {
     @PostMapping
     public ResponseEntity<TagDto> saveTag(@Validated(SaveGroup.class) @RequestBody TagDto tag) throws ValidationException {
         TagDto saved = tagService.save(tag);
-        tag.add(linkTo(methodOn(TagController.class).getTagById(tag.getId())).withRel("tag_link"));
-        tag.add(linkTo(methodOn(TagController.class).getAll(null)).withRel("all"));
+        saved.add(linkTo(methodOn(TagController.class).getTagById(saved.getId())).withRel("this_tag"));
+        getAllRef(saved);
         return ResponseEntity.ok(saved);
 
+    }
+
+    private void getAllRef(TagDto tag) {
+        tag.add(linkTo(methodOn(TagController.class).getAll(Pageable.unpaged())).withRel("all"));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<TagDto> getTagById(@PathVariable Long id) {
         TagDto tag = tagService.getTag(id);
         tag.add(linkTo(methodOn(TagController.class).getTagById(id)).withSelfRel());
-        tag.add(linkTo(methodOn(TagController.class).getAll(null)).withRel("all"));
+        getAllRef(tag);
         return ResponseEntity.ok(tag);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<RepresentationModel<?>> deleteTag(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteTag(@PathVariable Long id) {
         tagService.deleteTag(id);
-        RepresentationModel<?> representationModel = new RepresentationModel<>();
-        representationModel.add(linkTo(methodOn(TagController.class).getAll(null)).withRel("all"));
-        return ResponseEntity.ok(representationModel);
     }
 
     @GetMapping()
@@ -72,9 +75,9 @@ public class TagController {
     @GetMapping("/top/user/popular/tag")
     public ResponseEntity<TagDto> getTopUserMostPopularTag () {
         TagDto tag = tagService.getTopUserMostPopularTag();
-        tag.add(linkTo(methodOn(TagController.class).getTagById(tag.getId())).withRel("get by id"));
+        tag.add(linkTo(methodOn(TagController.class).getTagById(tag.getId())).withRel("this_tag"));
         tag.add(linkTo(methodOn(TagController.class).getTopUserMostPopularTag()).withSelfRel());
-        tag.add(linkTo(methodOn(TagController.class).getAll(null)).withRel("all"));
+        getAllRef(tag);
         return ResponseEntity.ok(tag);
     }
 

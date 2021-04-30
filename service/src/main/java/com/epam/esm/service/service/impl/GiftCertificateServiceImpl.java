@@ -16,8 +16,6 @@ import com.epam.esm.service.exception.ValidationException;
 import com.epam.esm.service.model.RequestParams;
 import com.epam.esm.service.service.GiftCertificateService;
 import com.epam.esm.service.service.TagService;
-import com.epam.esm.service.validation.SaveValidator;
-import com.epam.esm.service.validation.UpdateValidator;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -41,23 +39,19 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     private final GiftCertificateRepository certificateRepository;
     private final TagService tagService;
     private final ModelMapper modelMapper;
-    private final SaveValidator<GiftCertificateTagDto> saveValidator;
-    private final UpdateValidator<GiftCertificateTagDto> updateValidator;
+
 
 
     @Autowired
-    public GiftCertificateServiceImpl(GiftCertificateRepository certificateRepository, TagService tagService, ModelMapper modelMapper, SaveValidator<GiftCertificateTagDto> saveValidator, UpdateValidator<GiftCertificateTagDto> updateValidator) {
+    public GiftCertificateServiceImpl(GiftCertificateRepository certificateRepository, TagService tagService, ModelMapper modelMapper) {
         this.certificateRepository = certificateRepository;
         this.tagService = tagService;
         this.modelMapper = modelMapper;
-        this.saveValidator = saveValidator;
-        this.updateValidator = updateValidator;
     }
 
     @Transactional
     @Override
     public GiftCertificateTagDto save(GiftCertificateTagDto certificateDto) throws ValidationException {
-        saveValidator.validate(certificateDto);
         GiftCertificate certificate = modelMapper.map(certificateDto, GiftCertificate.class);
         saveCertificateTags(certificate);
         certificate.setCreateDate(LocalDateTime.now());
@@ -88,7 +82,6 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         certificateRepository.findById(updateId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(WRONG_CERTIFICATE, updateId)));
         certificateDto.setId(updateId);
-        updateValidator.validate(certificateDto);
         GiftCertificate certificate = modelMapper.map(certificateDto, GiftCertificate.class);
         certificate.setLastUpdateDate(LocalDateTime.now());
         saveCertificateTags(certificate);
@@ -96,7 +89,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return modelMapper.map(updated, GiftCertificateTagDto.class);
     }
 
-    private void saveCertificateTags(GiftCertificate certificate) {
+    private void saveCertificateTags(GiftCertificate certificate) throws ValidationException {
         Set<Tag> certificateTags = certificate.getTags();
         if (certificateTags != null && !certificateTags.isEmpty()) {
             Set<Tag> savedTags = tagService.saveAll(certificateTags);
