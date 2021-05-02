@@ -92,4 +92,14 @@ public class RequestParams {
             return new RequestParams(tagNames, ids, certificateDescription, certificateName);
         }
     }
+
+    @Override
+    public String toString() {
+        return "RequestParams{" +
+                "tagNames=" + tagNames +
+                ", ids=" + ids +
+                ", certificateDescription='" + certificateDescription + '\'' +
+                ", certificateName='" + certificateName + '\'' +
+                '}';
+    }
 }

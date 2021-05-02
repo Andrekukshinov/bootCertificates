@@ -7,6 +7,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.util.Objects;
 
 @Entity
 @Table(name = "order_certificates")
@@ -64,22 +65,30 @@ public class OrderCertificate {
         this.quantity = quantity;
     }
 
+    @Override
+    public String toString() {
+        return "OrderCertificate{" +
+                "id=" + id +
+                ", order=" + order.getId() +
+                ", orderCertificate=" + orderCertificate +
+                ", quantity=" + quantity +
+                '}';
+    }
 
-//    
-//    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) {
-//            return true;
-//        }
-//        if (o == null || getClass() != o.getClass()) {
-//            return false;
-//        }
-//        OrderCertificate that = (OrderCertificate) o;
-//        return Objects.equals(getId(), that.getId()) && Objects.equals(getOrder(), that.getOrder()) && Objects.equals(getOrderCertificate(), that.getOrderCertificate());
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//        return Objects.hash(getId(), getOrder(), getOrderCertificate());
-//    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        OrderCertificate that = (OrderCertificate) o;
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getOrderCertificate(), that.getOrderCertificate()) && Objects.equals(getQuantity(), that.getQuantity()) && Objects.equals(getOrder().getId(), that.getOrder().getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getOrderCertificate(), getQuantity(), getOrder().getId());
+    }
 }

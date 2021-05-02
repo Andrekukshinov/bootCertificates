@@ -2,24 +2,33 @@ package com.epam.esm.persistence.repository.impl;
 
 import com.epam.esm.persistence.config.TestConfiguration;
 import com.epam.esm.persistence.entity.GiftCertificate;
+import com.epam.esm.persistence.entity.Tag;
+import com.epam.esm.persistence.entity.enums.GiftCertificateStatus;
+import com.epam.esm.persistence.model.specification.EmptySpecification;
+import com.epam.esm.persistence.model.specification.FindByIdInSpecification;
+import com.epam.esm.persistence.repository.GiftCertificateRepository;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {TestConfiguration.class})
+@SpringBootTest(classes = {TestConfiguration.class})
 @ActiveProfiles("test")
 @Transactional
 class JdbcGiftCertificateRepositoryImplTest {
@@ -32,8 +41,15 @@ class JdbcGiftCertificateRepositoryImplTest {
     private static final String GYM_CERTIFICATE = "for boss of the gym";
     private static final String POOL = "pool";
     private static final String CONNECTION_POOL = "for better connection";
-    private static final String CLUP = "clup";
-    private static final String CLUP_GIFT = "for leatherman";
+    private static final String CLUB = "club";
+    private static final String LEATHER_MAN = "for leatherman";
+
+    private static final Tag FOURTH_TAG = new Tag(1L, "leatherTime");
+    private static final Tag FIFTH_TAG = new Tag(2L, "people");
+
+    private static final Set<Tag> FIFTH_FOURTH_TAG = Set.of(FIFTH_TAG, FOURTH_TAG);
+
+    private static final Set<Tag> FOURTH_FIFTH_TAG  = Set.of(FOURTH_TAG, FIFTH_TAG);
 
     private static final GiftCertificate FOR_SAVING = GiftCertificate.getBuilder()
             .setCreateDate(DATE)
@@ -49,6 +65,8 @@ class JdbcGiftCertificateRepositoryImplTest {
             .setCreateDate(DATE)
             .setLastUpdateDate(DATE)
             .setName(SPA)
+            .setStatus(GiftCertificateStatus.ACTIVE)
+            .setTags(Set.of(FOURTH_TAG))
             .setDescription(FAMILY_CERTIFICATE)
             .setPrice(new BigDecimal(754))
             .setDuration(3)
@@ -62,6 +80,8 @@ class JdbcGiftCertificateRepositoryImplTest {
             .setDescription(GYM_CERTIFICATE)
             .setPrice(new BigDecimal(300))
             .setDuration(14)
+            .setStatus(GiftCertificateStatus.ACTIVE)
+            .setTags(FIFTH_FOURTH_TAG)
             .build();
 
     private static final GiftCertificate THIRD = GiftCertificate.getBuilder()
@@ -72,17 +92,70 @@ class JdbcGiftCertificateRepositoryImplTest {
             .setDescription(CONNECTION_POOL)
             .setPrice(new BigDecimal(354))
             .setDuration(23)
+            .setStatus(GiftCertificateStatus.ACTIVE)
+            .setTags(Set.of(FIFTH_TAG))
             .build();
 
     private static final GiftCertificate FOURTH = GiftCertificate.getBuilder()
             .setId(4L)
             .setCreateDate(DATE)
             .setLastUpdateDate(DATE)
-            .setName(CLUP)
-            .setDescription(CLUP_GIFT)
+            .setName(CLUB)
+            .setDescription(LEATHER_MAN)
+            .setStatus(GiftCertificateStatus.ACTIVE)
             .setPrice(new BigDecimal(150))
             .setDuration(9)
+            .setTags(FIFTH_FOURTH_TAG)
             .build();
+
+    private static final GiftCertificate FIFTH = GiftCertificate.getBuilder()
+            .setId(5L)
+            .setCreateDate(DATE)
+            .setLastUpdateDate(DATE)
+            .setName("separate")
+            .setDescription("test me")
+            .setStatus(GiftCertificateStatus.ACTIVE)
+            .setPrice(new BigDecimal(150))
+            .setDuration(9)
+            .setTags(Set.of(FIFTH_TAG))
+            .build();
+
+    private static final GiftCertificate SIXTH = GiftCertificate.getBuilder()
+            .setId(6L)
+            .setCreateDate(DATE)
+            .setLastUpdateDate(DATE)
+            .setName("rich")
+            .setDescription(LEATHER_MAN)
+            .setStatus(GiftCertificateStatus.ACTIVE)
+            .setPrice(new BigDecimal(10000))
+            .setDuration(9)
+            .setTags(Set.of(FIFTH_TAG))
+            .build();
+
+    private static final GiftCertificate SEVENTH = GiftCertificate.getBuilder()
+            .setId(7L)
+            .setCreateDate(DATE)
+            .setLastUpdateDate(DATE)
+            .setName("poor")
+            .setDescription(LEATHER_MAN)
+            .setStatus(GiftCertificateStatus.ACTIVE)
+            .setPrice(new BigDecimal(1))
+            .setDuration(9)
+            .setTags(Set.of(FOURTH_TAG))
+            .build();
+
+    private static final GiftCertificate EIGHTH = GiftCertificate.getBuilder()
+            .setId(8L)
+            .setCreateDate(DATE)
+            .setLastUpdateDate(DATE)
+            .setName("pic kme")
+            .setDescription(LEATHER_MAN)
+            .setStatus(GiftCertificateStatus.ACTIVE)
+            .setPrice(new BigDecimal(12))
+            .setDuration(9)
+            .setTags(Set.of(FOURTH_TAG))
+            .build();
+
 
     private static final GiftCertificate FOR_UPDATING = GiftCertificate.getBuilder()
             .setId(3L)
@@ -92,27 +165,19 @@ class JdbcGiftCertificateRepositoryImplTest {
             .setDescription(FAMILY_CERTIFICATE)
             .setPrice(new BigDecimal(755))
             .setDuration(3)
+            .setTags(FOURTH_FIFTH_TAG)
             .build();
 
-    //todo fixme
-//    private static Stream<Arguments> dataProvider() {
-//        SearchSpecification findFirstAndFourth = new SearchSpecification("people", "e", "p");
-//        SearchSpecification findFirstThirdAndFourth = new SearchSpecification(null, "e", "p");
-//        SearchSpecification findFirstThirdAndFourthByDescription = new SearchSpecification(null, null, "p");
-//        SearchSpecification findAll = new SearchSpecification(null, null, null);
-//        SortSpecification nameSortAsc = new SortSpecification(null, SortDirection.ASC);
-//        SortSpecification nameSortDesc = new SortSpecification(null, SortDirection.DESC);
-//        SortSpecification nameDescriptionSortAsc = new SortSpecification(SortDirection.ASC, SortDirection.ASC);
-//        return Stream.of(
-//                Arguments.of(findFirstAndFourth, nameSortAsc, List.of(FOURTH, FIRST)),
-//                Arguments.of(findFirstThirdAndFourth, nameSortAsc, List.of(FOURTH, THIRD, FIRST)),
-//                Arguments.of(findFirstThirdAndFourthByDescription, nameSortDesc, List.of(FIRST, THIRD, FOURTH)),
-//                Arguments.of(findAll, nameDescriptionSortAsc, List.of(FOURTH, SECOND, THIRD, FIRST))
-//        );
-//    }
+    private static final Pageable FIRST_THREE_CERTIFICATES_PAGEABLE = PageRequest.of(0, 3, Sort.by(Sort.Direction.ASC, "id"));
+    private static final List<GiftCertificate> FIRST_THREE = List.of(FIRST, SECOND, THIRD);
+    private static final Page<GiftCertificate> EXPECTED_PAGE_3_VALUES = new PageImpl<>(FIRST_THREE, FIRST_THREE_CERTIFICATES_PAGEABLE, 8L);
+
+    private static final Pageable ALL_CERTIFICATES_PAGEABLE = PageRequest.of(0, 7, Sort.by(Sort.Direction.ASC, "id"));
+    private static final List<GiftCertificate> ALL_ACTIVE = List.of(FIRST, SECOND, THIRD, FOURTH, SIXTH, SEVENTH, EIGHTH);
+    private static final Page<GiftCertificate> EXPECTED_PAGE_ALL_ACTIVE = new PageImpl<>(ALL_ACTIVE, ALL_CERTIFICATES_PAGEABLE, 8L);
 
     @Autowired
-    private GiftCertificateRepositoryImpl repository;
+    private GiftCertificateRepository repository;
 
     @Test
     @Rollback
@@ -127,38 +192,32 @@ class JdbcGiftCertificateRepositoryImplTest {
     @Rollback
     void testSaveShouldReturnObjectIdWhenSaved() {
         GiftCertificate saved = repository.save(FOR_SAVING);
-//todo doesn't check if types are different
+
         assertThat(saved, is(FOR_SAVING));
     }
 
     @Test
     @Rollback
-    void testDeleteShouldReturnDeletedObjectsAmountWhenDeleted() {
-        int amount = repository.delete(2L);
+    void testUpdateShouldReturnUpdatedObjectsAmountWhenUpdated() {
+        GiftCertificate actual = repository.update(FOR_UPDATING);
 
-        assertThat(amount, is(EXPECTED_AMOUNT));
+        assertThat(actual, is(FOR_UPDATING));
     }
 
-    //fixme
-//    @Test
-//    @Rollback
-//    void testUpdateShouldReturnUpdatedObjectsAmountWhenUpdated() {
-//        int amount = repository.update(FOR_UPDATING);
-//
-//        assertThat(amount, is(EXPECTED_AMOUNT));
-//    }
+    @Test
+    @Rollback
+    void testFindBySpecificationShouldReturnListOf3Certificates() {
+        List<Long> ids = List.of(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L);
+        Page<GiftCertificate> page = repository.findBySpecification(List.of(new FindByIdInSpecification<>(ids)), FIRST_THREE_CERTIFICATES_PAGEABLE);
 
+        assertThat(page.getContent(), is(EXPECTED_PAGE_3_VALUES.getContent()));
+    }
 
-    //todo fixme
-//    @ParameterizedTest
-//    @MethodSource("dataProvider")
-//    @Rollback
-//    void testFindBySpecificationShouldReturnListOfObjects(
-//            SearchSpecification searchSpecification,
-//            SortSpecification sortSpecification,
-//            List<GiftCertificate> expectedCertificates) {
-//        List<GiftCertificate> giftCertificates = repository.findBySpecification(searchSpecification, sortSpecification);
-//
-//        assertThat(giftCertificates, is(expectedCertificates));
-//    }
+    @Test
+    @Rollback
+    void testFindBySpecificationShouldReturnListOfAllCertificates() {
+        Page<GiftCertificate> page = repository.findBySpecification(List.of(new EmptySpecification<>()), ALL_CERTIFICATES_PAGEABLE);
+
+        assertThat(page.getContent(), is(EXPECTED_PAGE_ALL_ACTIVE.getContent()));
+    }
 }

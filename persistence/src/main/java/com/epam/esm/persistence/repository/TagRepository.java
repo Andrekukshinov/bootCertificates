@@ -1,9 +1,11 @@
 package com.epam.esm.persistence.repository;
 
 import com.epam.esm.persistence.entity.Tag;
+import com.epam.esm.persistence.model.specification.Specification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -20,22 +22,12 @@ public interface TagRepository extends CreateDeleteRepository<Tag> {
     Set<Tag> findTagsByNames(Set<String> tagNames);
 
 
-    /**
-     * Method for getting tag found by name from data source
-     *
-     * @param tagName name to look for with
-     * @return optional of tag
-     */
-    Optional<Tag> findByName(String tagName);
-
-    /**Method that returns all tags from data source
-     * @return list of tags
-     */
-    Page<Tag> findAll(Pageable pageable);
-
     Set<Tag> saveAll(Set<Tag> tagsToBeSaved);
 
     Optional<Tag> findInCertificates(Long id);
 
     Tag getTopUserMostPopularTag();
+
+    Page<Tag> find(List<Specification<Tag>> orderSpecification, Pageable pageable);
+
 }

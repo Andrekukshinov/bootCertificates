@@ -25,8 +25,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -54,7 +57,7 @@ public class GiftCertificateController {
     }
 
     private void addMappingToAll(RepresentationModel<?> certificate) {
-        certificate.add((linkTo(methodOn(GiftCertificateController.class).getByParam(null, null)).withRel("all")));
+        certificate.add((linkTo(methodOn(GiftCertificateController.class).getByParam(null, null, null)).withRel("all")));
     }
 
     @PostMapping
@@ -63,7 +66,6 @@ public class GiftCertificateController {
         saved.add(linkTo(methodOn(GiftCertificateController.class).getGiftCertificateById(saved.getId())).withRel("this"));
         addMappingToAll(saved);
         return ResponseEntity.ok(saved);
-
     }
 
     @DeleteMapping("/{id}")
@@ -89,9 +91,12 @@ public class GiftCertificateController {
     }
 
     @GetMapping()
-    public ResponseEntity<PagedModel<EntityModel<GiftCertificateTagDto>>> getByParam(RequestParams specification, Pageable pageable) {
+    public ResponseEntity<PagedModel<EntityModel<GiftCertificateTagDto>>> getByParam(RequestParams specification, Pageable pageable, @RequestParam Map<String, String> requestParameters) {
+        System.out.println(requestParameters);
         Page<GiftCertificateTagDto> bySpecification = certificateService.getBySpecification(specification, pageable);
         PagedModel<EntityModel<GiftCertificateTagDto>> entityModels = assembler.toModel(bySpecification);
+        GiftCertificateTagDto giftCertificateTagDto = bySpecification.getContent().get(0);
+        giftCertificateTagDto.add(linkTo(methodOn(GiftCertificateController.class).getByParam(null, null, requestParameters)).withSelfRel());
         return ResponseEntity.ok(entityModels);
     }
 

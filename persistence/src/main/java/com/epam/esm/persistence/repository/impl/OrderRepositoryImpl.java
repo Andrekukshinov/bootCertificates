@@ -2,12 +2,12 @@ package com.epam.esm.persistence.repository.impl;
 
 import com.epam.esm.persistence.entity.Order;
 import com.epam.esm.persistence.model.specification.FindByIdInSpecification;
+import com.epam.esm.persistence.model.specification.Specification;
 import com.epam.esm.persistence.repository.OrderRepository;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +21,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 @Transactional
@@ -36,11 +37,11 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public Page<Order> find(Specification<Order> orderSpecification, Pageable pageable) {
+    public Page<Order> find(List<Specification<Order>> orderSpecification, Pageable pageable) {
         CriteriaBuilder cb = manager.getCriteriaBuilder();
         CriteriaQuery<Order> query = cb.createQuery(Order.class);
         Root<Order> giftCertificateFrom = query.from(Order.class);
-        Predicate predicate = orderSpecification.toPredicate(giftCertificateFrom, query, cb);
+        Predicate[] predicate = getPredicates(orderSpecification, cb, query,giftCertificateFrom);
         query.where(predicate);
         Long lastPage = getLastPage(cb);
         TypedQuery<Order> exec = getPagedQuery(pageable, cb, query, giftCertificateFrom);
@@ -51,7 +52,15 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public Optional<Order> findById(Long orderId) {
         Specification<Order> getById = new FindByIdInSpecification<>(List.of(orderId));
-        return Optional.ofNullable(DataAccessUtils.singleResult(find(getById, Pageable.unpaged()).getContent()));
+        return Optional.ofNullable(DataAccessUtils.singleResult(find(List.of(getById), Pageable.unpaged()).getContent()));
+    }
+
+    private Predicate[] getPredicates(List<Specification<Order>> mySpecification, CriteriaBuilder cb, CriteriaQuery<Order> query, Root<Order> root) {
+        return mySpecification
+                .stream()
+                .map(specification -> specification.toPredicate(root, query, cb))
+                .collect(Collectors.toList()).toArray((new Predicate[0]));
+
     }
 
     private Long getLastPage(CriteriaBuilder cb) {

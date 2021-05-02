@@ -79,7 +79,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         LOGGER.error(ex.getMessage(), ex);
-        ExceptionModel body = new ExceptionModel(ex.getMessage(), BAD_REQUEST);
+        ExceptionModel body = new ExceptionModel("invalid value " + ex.getValue(), BAD_REQUEST);
         return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 

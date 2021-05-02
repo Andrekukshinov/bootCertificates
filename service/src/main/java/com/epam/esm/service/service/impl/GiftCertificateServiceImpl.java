@@ -6,9 +6,9 @@ import com.epam.esm.persistence.entity.enums.GiftCertificateStatus;
 import com.epam.esm.persistence.model.specification.CertificateDescriptionSpecification;
 import com.epam.esm.persistence.model.specification.CertificateNameSpecification;
 import com.epam.esm.persistence.model.specification.CertificatesStatusSpecification;
-import com.epam.esm.persistence.model.specification.EmptySpecification;
 import com.epam.esm.persistence.model.specification.FindByIdInSpecification;
 import com.epam.esm.persistence.model.specification.GiftCertificateTagNamesSpecification;
+import com.epam.esm.persistence.model.specification.Specification;
 import com.epam.esm.persistence.repository.GiftCertificateRepository;
 import com.epam.esm.service.dto.certificate.GiftCertificateTagDto;
 import com.epam.esm.service.exception.EntityNotFoundException;
@@ -20,7 +20,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -105,7 +104,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     @Override
     public Page<GiftCertificate> getCertificatesBySpecification(RequestParams params, Pageable pageable) {
-        Specification<GiftCertificate> specification = getGiftCertificateSpecification(params);
+        List<Specification<GiftCertificate>> specification = getGiftCertificateSpecification(params);
         return certificateRepository.findBySpecification(specification, pageable);
     }
 
@@ -120,7 +119,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return modelMapper.map(updated, GiftCertificateTagDto.class);
     }
 
-    private Specification<GiftCertificate> getGiftCertificateSpecification(RequestParams params) {
+    private List<Specification<GiftCertificate>> getGiftCertificateSpecification(RequestParams params) {
         List<Specification<GiftCertificate>> specifications = new ArrayList<>();
         List<Long> ids = params.getIds();
         Specification<GiftCertificate> activeCertificates
@@ -145,10 +144,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
             Specification<GiftCertificate> idSpecification = new FindByIdInSpecification<>(ids);
             specifications.add(idSpecification);
         }
-        return specifications
-                .stream()
-                .reduce(Specification::and)
-                .orElse(new EmptySpecification<>());
+        return specifications;
     }
 
 }

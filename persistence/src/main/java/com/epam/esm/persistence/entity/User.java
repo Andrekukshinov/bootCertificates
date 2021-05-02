@@ -1,6 +1,9 @@
 package com.epam.esm.persistence.entity;
 
+import com.epam.esm.persistence.audit.listeners.EntityListener;
+
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -11,6 +14,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
+@EntityListeners(EntityListener.class)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,8 +22,6 @@ public class User {
     private String password;
     private String email;
     private String nickname;
-//    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-//    private Set<Order> orders;
 
     public User() {
     }
@@ -63,14 +65,16 @@ public class User {
     public void setNickname(String nickname) {
         this.nickname = nickname;
     }
-//
-//    public Set<Order> getOrders() {
-//        return orders;
-//    }
-//
-//    public void setOrders(Set<Order> orders) {
-//        this.orders = orders;
-//    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", password='" + password + '\'' +
+                ", email='" + email + '\'' +
+                ", nickname='" + nickname + '\'' +
+                '}';
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -88,6 +92,4 @@ public class User {
     public int hashCode() {
         return Objects.hash(getId(), getPassword(), getEmail(), getNickname());
     }
-
-
 }

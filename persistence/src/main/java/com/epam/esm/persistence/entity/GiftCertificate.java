@@ -1,10 +1,12 @@
 package com.epam.esm.persistence.entity;
 
+import com.epam.esm.persistence.audit.listeners.EntityListener;
 import com.epam.esm.persistence.entity.enums.GiftCertificateStatus;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
@@ -16,10 +18,12 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "gift_certificates")
+@EntityListeners(EntityListener.class)
 public class GiftCertificate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -136,6 +140,38 @@ public class GiftCertificate {
 
     public static final Builder getBuilder() {
         return new Builder();
+    }
+
+    @Override
+    public String toString() {
+        return "GiftCertificate{" +
+                "id=" + id +
+                ", createDate=" + createDate +
+                ", lastUpdateDate=" + lastUpdateDate +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", price=" + price +
+                ", status=" + status +
+                ", duration=" + duration +
+                ", tags=" + tags +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        GiftCertificate that = (GiftCertificate) o;
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getCreateDate(), that.getCreateDate()) && Objects.equals(getLastUpdateDate(), that.getLastUpdateDate()) && Objects.equals(getName(), that.getName()) && Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getPrice(), that.getPrice()) && getStatus() == that.getStatus() && Objects.equals(getDuration(), that.getDuration()) && Objects.equals(getTags(), that.getTags());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getCreateDate(), getLastUpdateDate(), getName(), getDescription(), getPrice(), getStatus(), getDuration(), getTags());
     }
 
     public static final class Builder {

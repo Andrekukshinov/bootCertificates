@@ -1,6 +1,8 @@
 package com.epam.esm.persistence.repository.impl;
 
 import com.epam.esm.persistence.entity.Tag;
+import com.epam.esm.persistence.model.specification.FindByIdInSpecification;
+import com.epam.esm.persistence.model.specification.Specification;
 import com.epam.esm.persistence.repository.TagRepository;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.data.domain.Page;
@@ -31,6 +33,7 @@ public class TagRepositoryImpl implements TagRepository {
             " SELECT tags.id, tags.name FROM tags" +
             " INNER JOIN tags_gift_certificates tgc ON tags.id = tgc.tag_id" +
             " WHERE tags.id = :id";
+
     private static final String FIND_MOST_POPULAR_TOP_USER_TAG =
             "SELECT tg.name, tg.id, SUM(oc.quantity) total_amount\n" +
             "FROM tags AS tg\n" +
@@ -38,8 +41,7 @@ public class TagRepositoryImpl implements TagRepository {
             "         INNER JOIN gift_certificates gc ON tgc.gift_certificate_id = gc.id\n" +
             "         INNER JOIN order_certificates oc ON gc.id = oc.certificate_id\n" +
             "         INNER JOIN orders o ON oc.order_id = o.id\n" +
-            "         INNER JOIN users u ON o.user_id = u.id\n" +
-            "WHERE u.id = (\n" +
+            "WHERE o.id = (\n" +
             "    SELECT user_id AS uid\n" +
             "    FROM orders\n" +
             "    GROUP BY uid\n" +
@@ -61,15 +63,14 @@ public class TagRepositoryImpl implements TagRepository {
 
     @Override
     public Optional<Tag> findById(Long id) {
-        return Optional.ofNullable(manager.find(Tag.class, id));
+        Page<Tag> tags = find(List.of(new FindByIdInSpecification<>(List.of(id))), Pageable.unpaged());
+        return Optional.ofNullable(DataAccessUtils.singleResult(tags.getContent()));
     }
 
     @Override
-    public int delete(Long id) {
+    public void delete(Long id) {
         Tag tag = manager.find(Tag.class, id);
         manager.remove(tag);
-        //fixme
-        return tag.getId() != 0 ? 1 : 0;
     }
 
     @Override
@@ -88,33 +89,25 @@ public class TagRepositoryImpl implements TagRepository {
         return typedQuery.getResultStream().collect(Collectors.toSet());
     }
 
-
     @Override
-    public Optional<Tag> findByName(String tagName) {
+    public Page<Tag> find(List<Specification<Tag>> orderSpecification, Pageable pageable) {
         CriteriaBuilder cb = manager.getCriteriaBuilder();
         CriteriaQuery<Tag> query = cb.createQuery(Tag.class);
-        Root<Tag> root = query.from(Tag.class);
-
-        Predicate name = cb.equal(root.get("name"), tagName);
-
-        query.where(name);
-        TypedQuery<Tag> typedQuery = manager.createQuery(query);
-        return Optional.ofNullable(DataAccessUtils.singleResult(typedQuery.getResultList()));
+        Root<Tag> giftCertificateFrom = query.from(Tag.class);
+        Predicate[] predicate = getPredicates(orderSpecification, cb, query,giftCertificateFrom);
+        query.where(predicate);
+        Long lastPage = getLastPage(cb);
+        TypedQuery<Tag> exec = getPagedQuery(pageable, cb, query, giftCertificateFrom);
+        List<Tag> resultList = exec.getResultList();
+        return new PageImpl<>(resultList, pageable, lastPage);
     }
 
-    @Override
-    public Page<Tag> findAll(Pageable pageable) {
-        CriteriaBuilder cb = manager.getCriteriaBuilder();
-        CriteriaQuery<Tag> query = cb.createQuery(Tag.class);
-        Root<Tag> from = query.from(Tag.class);
-        query.select(from);
+    private Predicate[] getPredicates(List<Specification<Tag>> mySpecification, CriteriaBuilder cb, CriteriaQuery<Tag> query, Root<Tag> root) {
+        return mySpecification
+                .stream()
+                .map(specification -> specification.toPredicate(root, query, cb))
+                .collect(Collectors.toList()).toArray((new Predicate[0]));
 
-        TypedQuery<Tag> exec = getPagedQuery(pageable, cb, query, from);
-
-        Long lastPage = getLastPage(cb);
-
-        List<Tag> tags = exec.getResultList();
-        return new PageImpl<>(tags, pageable, lastPage);
     }
 
     private Long getLastPage(CriteriaBuilder cb) {

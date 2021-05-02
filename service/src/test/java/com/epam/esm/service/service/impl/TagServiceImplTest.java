@@ -50,36 +50,36 @@ class TagServiceImplTest {
 
     @Test
     void testSaveTagShouldVerifyRepositoryCallWhenObjectValid() throws ValidationException {
-        when(tagRepository.findByName(any())).thenReturn(Optional.empty());
+//        when(tagRepository.find(any(), any())).thenReturn(Optional.empty());
         when(modelMapper.map(any(), any())).thenReturn((PEOPLE_TAG));
 
         service.save(PEOPLE_TAG_DTO);
 
         verify(tagRepository, times(1)).save(any());
-        verify(tagRepository, times(1)).findByName(any());
+//        verify(tagRepository, times(1)).findByName(any());
     }
 
     @Test
     void testSaveTagShouldThrowValidationExceptionWhenInvalidObject() throws ValidationException {
-        when(tagRepository.findByName(any())).thenReturn(Optional.empty());
+//        when(tagRepository.findByName(any())).thenReturn(Optional.empty());
         when(modelMapper.map(any(), any())).thenReturn(PEOPLE_TAG);
 
         assertThrows(ValidationException.class, () -> service.save(PEOPLE_TAG_DTO));
 
         verify(tagRepository, times(0)).save(any());
-        verify(tagRepository, times(0)).findByName(any());
+//        verify(tagRepository, times(0)).findByName(any());
     }
 
     @Test
     void testSaveTagShouldEntityAlreadyExistsExceptionWhenTagExists() throws ValidationException {
-        when(tagRepository.findByName(any())).thenReturn(Optional.of(PEOPLE_TAG));
+//        when(tagRepository.findByName(any())).thenReturn(Optional.of(PEOPLE_TAG));
         when(modelMapper.map(any(), any())).thenReturn((PEOPLE_TAG));
         when(modelMapper.map(any(), any())).thenReturn(PEOPLE_TAG);
 
         assertThrows(EntityAlreadyExistsException.class, () -> service.save(PEOPLE_TAG_DTO));
 
         verify(tagRepository, times(0)).save(any());
-        verify(tagRepository, times(1)).findByName(any());
+//        verify(tagRepository, times(1)).findByName(any());
     }
 
     @Test

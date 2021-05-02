@@ -1,11 +1,13 @@
 package com.epam.esm.persistence.entity;
 
 
+import com.epam.esm.persistence.audit.listeners.EntityListener;
 import com.epam.esm.persistence.entity.enums.OrderStatus;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
@@ -23,6 +25,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "orders")
+@EntityListeners(EntityListener.class)
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -120,11 +123,11 @@ public class Order {
             return false;
         }
         Order order = (Order) o;
-        return Objects.equals(id, order.id) && Objects.equals(createDate, order.createDate) && status == order.status && Objects.equals(totalPrice, order.totalPrice) && Objects.equals(user, order.user) && Objects.equals(orderCertificates, order.orderCertificates);
+        return Objects.equals(getId(), order.getId()) && Objects.equals(getCreateDate(), order.getCreateDate()) && getStatus() == order.getStatus() && Objects.equals(getTotalPrice(), order.getTotalPrice()) && Objects.equals(getUser(), order.getUser()) && Objects.equals(getOrderCertificates(), order.getOrderCertificates());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, createDate, status, totalPrice, user, orderCertificates);
+        return Objects.hash(getId(), getCreateDate(), getStatus(), getTotalPrice(), getUser(), getOrderCertificates());
     }
 }

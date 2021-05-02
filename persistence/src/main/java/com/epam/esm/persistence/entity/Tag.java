@@ -1,7 +1,10 @@
 package com.epam.esm.persistence.entity;
 
+import com.epam.esm.persistence.audit.listeners.EntityListener;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -10,6 +13,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "tags")
+@EntityListeners(EntityListener.class)
 public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,5 +61,13 @@ public class Tag {
     @Override
     public int hashCode() {
         return Objects.hash(getId(), getName());
+    }
+
+    @Override
+    public String toString() {
+        return "Tag{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

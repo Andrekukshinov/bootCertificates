@@ -1,6 +1,8 @@
 package com.epam.esm.service.service.impl;
 
 import com.epam.esm.persistence.entity.Tag;
+import com.epam.esm.persistence.model.specification.EmptySpecification;
+import com.epam.esm.persistence.model.specification.TagNameSpecification;
 import com.epam.esm.persistence.repository.TagRepository;
 import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.exception.DeleteTagInUseException;
@@ -12,12 +14,14 @@ import com.epam.esm.service.service.TagService;
 import com.epam.esm.service.validation.Validator;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -44,7 +48,8 @@ public class TagServiceImpl implements TagService {
     public TagDto save(TagDto tagDto) {
         Tag tag = modelMapper.map(tagDto, Tag.class);
         String name = tag.getName();
-        Optional<Tag> tagOptional = tagRepository.findByName(name);
+        Page<Tag> tagPage = tagRepository.find(List.of(new TagNameSpecification(tag.getName())), Pageable.unpaged());
+        Optional<Tag> tagOptional = Optional.ofNullable(DataAccessUtils.singleResult(tagPage.getContent()));
         tagOptional.ifPresent((ignored) -> {
             throw new EntityAlreadyExistsException(String.format(ALREADY_EXISTS_PATTERN, name));
         });
@@ -73,7 +78,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public Page<TagDto> getAll(Pageable pageable) {
-        Page<Tag> tagPage = tagRepository.findAll(pageable);
+        Page<Tag> tagPage = tagRepository.find(List.of(new EmptySpecification<>()),pageable);
         return tagPage.map(tag -> modelMapper.map(tag, TagDto.class));
     }
 
@@ -108,7 +113,9 @@ public class TagServiceImpl implements TagService {
                     () -> {throw new InvalidEntityException("invalid tag with id = " + tagId);}
             );
         } else {
-            Optional<Tag> optionalTag = tagRepository.findByName(name);
+            TagNameSpecification specification = new TagNameSpecification(name);
+            Page<Tag> tagPage = tagRepository.find(List.of(specification), Pageable.unpaged());
+            Optional<Tag> optionalTag = Optional.ofNullable(DataAccessUtils.singleResult(tagPage.getContent()));
             optionalTag.ifPresentOrElse(
                     result::add,
                     () -> {

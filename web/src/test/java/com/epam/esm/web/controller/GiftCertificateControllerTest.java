@@ -137,7 +137,7 @@ class GiftCertificateControllerTest {
         verify(certificateService, times(1)).updateCertificate(OBJECT, 1L);
     }
 
-    //fixme
+//    fixme
 //    @Test
 //    void testGetByParamShouldReturnListDto() throws Exception {
 //        DeprecatedSpecificationDto deprecatedSpecificationDto =

@@ -1,3 +1,4 @@
+
 CREATE TABLE IF NOT EXISTS tags
 (
     id   BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -12,7 +13,8 @@ CREATE TABLE IF NOT EXISTS gift_certificates
     duration         SMALLINT,
     create_date      DATETIME,
     last_update_date DATETIME,
-    price            DECIMAL
+    status           ENUM ('ACTIVE', 'DELETED') DEFAULT 'ACTIVE',
+    price            DECIMAL UNSIGNED
 );
 
 CREATE TABLE IF NOT EXISTS tags_gift_certificates

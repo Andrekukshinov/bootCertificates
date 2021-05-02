@@ -22,5 +22,5 @@ public interface CreateDeleteRepository<T> extends ReadOperationRepository<T> {
      * @param id of object to be deleted by
      * @return amount of rows deleted from data source
      */
-    int delete(Long id);
+    void delete(Long id);
 }
