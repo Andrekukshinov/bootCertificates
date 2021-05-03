@@ -1,6 +1,7 @@
 package com.epam.esm.persistence.repository.impl;
 
 import com.epam.esm.persistence.entity.User;
+import com.epam.esm.persistence.exception.SortingException;
 import com.epam.esm.persistence.model.page.Page;
 import com.epam.esm.persistence.model.page.PageImpl;
 import com.epam.esm.persistence.model.page.Pageable;
@@ -15,6 +16,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.List;
@@ -75,12 +77,20 @@ public class UserRepositoryImpl implements UserRepository {
         if (sort == null) {
             query.orderBy(cb.asc(from.get("id")));
         } else {
+            Path<User> sortParam = getSortParam(from, sort);
             if ("desc".equalsIgnoreCase(pageable.getSortDir())) {
-                query.orderBy(cb.desc(from.get(sort)));
+                query.orderBy(cb.desc(sortParam));
             } else {
-                query.orderBy(cb.asc(from.get(sort)));
+                query.orderBy(cb.asc(sortParam));
             }
         }
     }
 
+    private Path<User> getSortParam(Root<User> from, String sort) {
+        try {
+            return from.get(sort);
+        } catch (IllegalArgumentException e) {
+            throw new SortingException("field " + sort + " is invalid");
+        }
+    }
 }

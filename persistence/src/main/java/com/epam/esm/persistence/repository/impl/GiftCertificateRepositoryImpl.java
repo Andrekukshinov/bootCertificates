@@ -3,6 +3,7 @@ package com.epam.esm.persistence.repository.impl;
 import com.epam.esm.persistence.entity.GiftCertificate;
 import com.epam.esm.persistence.entity.Tag;
 import com.epam.esm.persistence.entity.enums.GiftCertificateStatus;
+import com.epam.esm.persistence.exception.SortingException;
 import com.epam.esm.persistence.model.page.Page;
 import com.epam.esm.persistence.model.page.PageImpl;
 import com.epam.esm.persistence.model.page.Pageable;
@@ -20,6 +21,7 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.math.BigDecimal;
@@ -155,11 +157,20 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
         if (sort == null) {
             query.orderBy(cb.asc(from.get("id")));
         } else {
+            Path<GiftCertificate> sortParam = getSortParam(from, sort);
             if ("desc".equalsIgnoreCase(pageable.getSortDir())) {
-                query.orderBy(cb.desc(from.get(sort)));
+                query.orderBy(cb.desc(sortParam));
             } else {
-                query.orderBy(cb.asc(from.get(sort)));
+                query.orderBy(cb.asc(sortParam));
             }
+        }
+    }
+
+    private Path<GiftCertificate> getSortParam(Root<GiftCertificate> from, String sort) {
+        try {
+            return from.get(sort);
+        } catch (IllegalArgumentException e) {
+            throw new SortingException("field " + sort + " is invalid");
         }
     }
 }
