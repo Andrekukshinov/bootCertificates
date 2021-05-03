@@ -3,6 +3,9 @@ package com.epam.esm.service.service.impl;
 import com.epam.esm.persistence.entity.GiftCertificate;
 import com.epam.esm.persistence.entity.Order;
 import com.epam.esm.persistence.entity.OrderCertificate;
+import com.epam.esm.persistence.model.page.Page;
+import com.epam.esm.persistence.model.page.PageImpl;
+import com.epam.esm.persistence.model.page.Pageable;
 import com.epam.esm.persistence.model.specification.FindByIdInSpecification;
 import com.epam.esm.persistence.model.specification.FindUserOrdersSpecification;
 import com.epam.esm.persistence.model.specification.OrderByUserIdSpecification;
@@ -19,8 +22,6 @@ import com.epam.esm.service.service.OrderService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -142,9 +143,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderCertificatesDto getUserOrderById(Long userId, Long orderId) {
-        Specification<Order> specification = new OrderByUserIdSpecification(userId);
-        Specification<Order> byId = new FindByIdInSpecification<>(List.of(orderId));
-        Order nullableValue = DataAccessUtils.singleResult(repository.find(List.of(specification, byId), Pageable.unpaged()).getContent());
+        Specification<Order> specification = Specification.and(new OrderByUserIdSpecification(userId), new FindByIdInSpecification<>(List.of(orderId)));
+        Order nullableValue = DataAccessUtils.singleResult(repository.find(specification, Pageable.unpaged()).getContent());
         Optional<Order> orderOptional = Optional.ofNullable(nullableValue);
         Order order = orderOptional.orElseThrow(() -> new EntityNotFoundException(String.format("order (id=%s), of user (id=%s), bot found", orderId, userId)));
         return mapper.map(order, OrderCertificatesDto.class);
@@ -153,7 +153,12 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Page<OrderDetailsDto> getAllUserOrders(Long userId, Pageable pageable) {
         Specification<Order> getAllSpec = new FindUserOrdersSpecification(userId);
-        Page<Order> orders = repository.find(List.of(getAllSpec), pageable);
-        return orders.map(order -> mapper.map(order, OrderDetailsDto.class));
+        Page<Order> ordersPage = repository.find(getAllSpec, pageable);
+        List<Order> content = ordersPage.getContent();
+        List<OrderDetailsDto> contentDto = content
+                .stream()
+                .map(order -> mapper.map(order, OrderDetailsDto.class))
+                .collect(Collectors.toList());
+        return new PageImpl<>(contentDto, pageable, ordersPage.getLastPage());
     }
 }

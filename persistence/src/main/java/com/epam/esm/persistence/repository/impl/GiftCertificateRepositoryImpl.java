@@ -3,17 +3,14 @@ package com.epam.esm.persistence.repository.impl;
 import com.epam.esm.persistence.entity.GiftCertificate;
 import com.epam.esm.persistence.entity.Tag;
 import com.epam.esm.persistence.entity.enums.GiftCertificateStatus;
-import com.epam.esm.persistence.exception.SortingException;
+import com.epam.esm.persistence.model.page.Page;
+import com.epam.esm.persistence.model.page.PageImpl;
+import com.epam.esm.persistence.model.page.Pageable;
 import com.epam.esm.persistence.model.specification.CertificatesStatusSpecification;
 import com.epam.esm.persistence.model.specification.FindByIdInSpecification;
 import com.epam.esm.persistence.model.specification.Specification;
 import com.epam.esm.persistence.repository.GiftCertificateRepository;
 import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.query.QueryUtils;
-import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +28,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 
 @Repository
@@ -51,8 +47,8 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
     @Override
     public Optional<GiftCertificate> findById(Long id) {
         Specification<GiftCertificate> byId = new FindByIdInSpecification<>(List.of(id));
-        Specification<GiftCertificate> specification = new CertificatesStatusSpecification(GiftCertificateStatus.ACTIVE);
-        Page<GiftCertificate> certificate = findBySpecification(List.of(specification, byId), Pageable.unpaged());
+        Specification<GiftCertificate> specification = Specification.and(byId, new CertificatesStatusSpecification(GiftCertificateStatus.ACTIVE));
+        Page<GiftCertificate> certificate = findBySpecification(specification, Pageable.unpaged());
         GiftCertificate giftCertificate = DataAccessUtils.singleResult(certificate.getContent());
         return Optional.ofNullable(giftCertificate);
     }
@@ -63,7 +59,6 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
             certificate.setStatus(GiftCertificateStatus.DELETED);
             manager.merge(certificate);
         });
-        //fixme
     }
 
     @Override
@@ -86,98 +81,86 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
 
     private void setFieldsToUpdate(GiftCertificate source, GiftCertificate target) {
         LocalDateTime createDate = source.getCreateDate();
-        if (Objects.nonNull(createDate)){
+        if (Objects.nonNull(createDate)) {
             target.setCreateDate(createDate);
         }
         LocalDateTime lastUpdateDate = source.getLastUpdateDate();
-        if (Objects.nonNull(lastUpdateDate)){
+        if (Objects.nonNull(lastUpdateDate)) {
             target.setLastUpdateDate(lastUpdateDate);
         }
         Set<Tag> tags = source.getTags();
-        if (Objects.nonNull(tags)){
+        if (Objects.nonNull(tags)) {
             target.setTags(tags);
         }
         String name = source.getName();
-        if (Objects.nonNull(name)){
+        if (Objects.nonNull(name)) {
             target.setName(name);
         }
         String description = source.getDescription();
-        if (Objects.nonNull(description)){
+        if (Objects.nonNull(description)) {
             target.setDescription(description);
         }
         BigDecimal price = source.getPrice();
-        if (Objects.nonNull(price)){
+        if (Objects.nonNull(price)) {
             target.setPrice(price);
         }
         GiftCertificateStatus status = source.getStatus();
-        if (Objects.nonNull(status)){
+        if (Objects.nonNull(status)) {
             target.setStatus(status);
         }
     }
 
     @Override
-    public Page<GiftCertificate> findBySpecification(List<Specification<GiftCertificate>> mySpecification, Pageable pageable) {
+    public Page<GiftCertificate> findBySpecification(Specification<GiftCertificate> specification, Pageable pageable) {
         CriteriaBuilder cb = manager.getCriteriaBuilder();
         CriteriaQuery<GiftCertificate> query = cb.createQuery(GiftCertificate.class);
         Root<GiftCertificate> giftCertificateFrom = query.from(GiftCertificate.class);
-        Predicate[] specifications = getPredicates(mySpecification, cb, query, giftCertificateFrom);
-        query.where(specifications);
+        Predicate restriction = specification.toPredicate(giftCertificateFrom, query, cb);
+        query.where(restriction);
         TypedQuery<GiftCertificate> exec = getPagedQuery(pageable, cb, query, giftCertificateFrom);
-        Long lastPage = getLastPage(cb);
+        Integer lastPage = getLastPage(cb, pageable,specification);
         List<GiftCertificate> content = exec.getResultList();
-        Page<GiftCertificate> page = new PageImpl<>(content, pageable,lastPage);
-        return page;
+        return new PageImpl<>(content, pageable, lastPage);
     }
 
-    private Predicate[] getPredicates(List<Specification<GiftCertificate>> mySpecification, CriteriaBuilder cb, CriteriaQuery<GiftCertificate> query, Root<GiftCertificate> giftCertificateFrom) {
-        return mySpecification
-                .stream()
-                .map(specification -> specification.toPredicate(giftCertificateFrom, query, cb))
-                .collect(Collectors.toList()).toArray((new Predicate[0]));
-
-    }
-
-    private Long getLastPage(CriteriaBuilder cb) {
+    //todo add predicate
+    private Integer getLastPage(CriteriaBuilder cb, Pageable pageable, Specification<GiftCertificate> specification) {
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-        countQuery.select(cb.count(countQuery.from(GiftCertificate.class)));
-        return manager.createQuery(countQuery).getSingleResult();
+        Root<GiftCertificate> certificateRoot = countQuery.from(GiftCertificate.class);
+        countQuery.select(cb.count(certificateRoot));
+        Predicate restriction = specification.toPredicate(certificateRoot, countQuery, cb);
+        countQuery.where(restriction);
+        Long totalAmount = manager.createQuery(countQuery).getSingleResult();
+        Integer pageSize = pageable.getSize();
+        int amount = (int) (totalAmount / pageSize);
+        return totalAmount % pageSize == 0 ? amount : amount + 1;
     }
 
 
     private TypedQuery<GiftCertificate> getPagedQuery(Pageable pageable, CriteriaBuilder cb, CriteriaQuery<GiftCertificate> query, Root<GiftCertificate> from) {
         if (pageable.isPaged()) {
-            long pageNumber = pageable.getOffset();
-            int pageSize = pageable.getPageSize();
-            try {
-                query.orderBy((QueryUtils.toOrders(pageable.getSort(), from, cb)));
-            } catch (PropertyReferenceException e) {
-                throw new SortingException(e.getMessage());
-            }
+            int pageNumber = pageable.getPage();
+            int pageSize = pageable.getSize();
+            setSort(pageable, cb, query, from);
             TypedQuery<GiftCertificate> exec = manager.createQuery(query);
-            exec.setFirstResult(Math.toIntExact(pageNumber));
-            exec.setMaxResults((pageSize));
+            exec.setFirstResult(pageNumber);
+            exec.setMaxResults(pageSize);
             return exec;
         }
         return manager.createQuery(query);
     }
 
-//    private List<Order> getOrders(MySpecification mySpecification, CriteriaBuilder cb, Root<GiftCertificate> fromCertificate) {
-//        List<Order> orders = new ArrayList<>();
-//        SortDirection nameSort = mySpecification.getNameSortDir();
-//        if (nameSort != null) {
-//            Order nameSortDir = (nameSort.equals(SortDirection.ASC)) ?
-//                    cb.asc(fromCertificate.get("name")) :
-//                    cb.desc(fromCertificate.get("name"));
-//            orders.add(nameSortDir);
-//        }
-//        SortDirection createDateSort = mySpecification.getCreateDateSortDir();
-//        if (createDateSort != null) {
-//            Order createDateSortDir = (createDateSort.equals(SortDirection.ASC)) ?
-//                    cb.asc(fromCertificate.get("createDate")) :
-//                    cb.desc(fromCertificate.get("createDate"));
-//            orders.add(createDateSortDir);
-//        }
-//        return orders;
-//    }
-
+    private void setSort(Pageable pageable, CriteriaBuilder cb, CriteriaQuery<GiftCertificate> query, Root<GiftCertificate> from) {
+        String sort = pageable.getSort();
+        if (sort == null) {
+            query.orderBy(cb.asc(from.get("id")));
+        } else {
+            if ("desc".equalsIgnoreCase(pageable.getSortDir())) {
+                query.orderBy(cb.desc(from.get(sort)));
+            } else {
+                query.orderBy(cb.asc(from.get(sort)));
+            }
+        }
+    }
 }
+

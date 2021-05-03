@@ -3,9 +3,13 @@ package com.epam.esm.service.service.impl;
 import com.epam.esm.persistence.entity.GiftCertificate;
 import com.epam.esm.persistence.entity.Tag;
 import com.epam.esm.persistence.entity.enums.GiftCertificateStatus;
+import com.epam.esm.persistence.model.page.Page;
+import com.epam.esm.persistence.model.page.PageImpl;
+import com.epam.esm.persistence.model.page.Pageable;
 import com.epam.esm.persistence.model.specification.CertificateDescriptionSpecification;
 import com.epam.esm.persistence.model.specification.CertificateNameSpecification;
 import com.epam.esm.persistence.model.specification.CertificatesStatusSpecification;
+import com.epam.esm.persistence.model.specification.FindAllCertificatesSpecification;
 import com.epam.esm.persistence.model.specification.FindByIdInSpecification;
 import com.epam.esm.persistence.model.specification.GiftCertificateTagNamesSpecification;
 import com.epam.esm.persistence.model.specification.Specification;
@@ -18,8 +22,6 @@ import com.epam.esm.service.service.GiftCertificateService;
 import com.epam.esm.service.service.TagService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class GiftCertificateServiceImpl implements GiftCertificateService {
@@ -98,13 +101,17 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     @Override
     public Page<GiftCertificateTagDto> getBySpecification(RequestParams params, Pageable pageable) {
-        Page<GiftCertificate> certificates = getCertificatesBySpecification(params, pageable);
-        return certificates.map(certificate -> modelMapper.map(certificate, GiftCertificateTagDto.class));
+        Page<GiftCertificate> page = getCertificatesBySpecification(params, pageable);
+        List<GiftCertificateTagDto> contentDto = page.getContent()
+                .stream()
+                .map(order -> modelMapper.map(order, GiftCertificateTagDto.class))
+                .collect(Collectors.toList());
+        return new PageImpl<>(contentDto, pageable, page.getLastPage());
     }
 
     @Override
     public Page<GiftCertificate> getCertificatesBySpecification(RequestParams params, Pageable pageable) {
-        List<Specification<GiftCertificate>> specification = getGiftCertificateSpecification(params);
+        Specification<GiftCertificate> specification = getGiftCertificateSpecification(params);
         return certificateRepository.findBySpecification(specification, pageable);
     }
 
@@ -119,7 +126,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return modelMapper.map(updated, GiftCertificateTagDto.class);
     }
 
-    private List<Specification<GiftCertificate>> getGiftCertificateSpecification(RequestParams params) {
+    private Specification<GiftCertificate> getGiftCertificateSpecification(RequestParams params) {
         List<Specification<GiftCertificate>> specifications = new ArrayList<>();
         List<Long> ids = params.getIds();
         Specification<GiftCertificate> activeCertificates
@@ -144,7 +151,10 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
             Specification<GiftCertificate> idSpecification = new FindByIdInSpecification<>(ids);
             specifications.add(idSpecification);
         }
-        return specifications;
+        return specifications
+                .stream()
+                .reduce(Specification::and)
+                .orElse(new FindAllCertificatesSpecification());
     }
 
 }

@@ -1,11 +1,9 @@
 package com.epam.esm.persistence.repository;
 
 import com.epam.esm.persistence.entity.GiftCertificate;
+import com.epam.esm.persistence.model.page.Page;
+import com.epam.esm.persistence.model.page.Pageable;
 import com.epam.esm.persistence.model.specification.Specification;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
-import java.util.List;
 
 
 /**
@@ -27,7 +25,7 @@ public interface GiftCertificateRepository extends CreateDeleteRepository<GiftCe
      * @param mySpecification to search and sort certificates with
      * @return list of found certificates
      */
-    Page<GiftCertificate> findBySpecification(List<Specification<GiftCertificate>> mySpecification, Pageable pageable);
+    Page<GiftCertificate> findBySpecification(Specification<GiftCertificate> mySpecification, Pageable pageable);
 
     GiftCertificate partialUpdate(Long certificateId, GiftCertificate toBeUpdated);
 }

@@ -1,11 +1,10 @@
 package com.epam.esm.persistence.repository;
 
 import com.epam.esm.persistence.entity.Tag;
+import com.epam.esm.persistence.model.page.Page;
+import com.epam.esm.persistence.model.page.Pageable;
 import com.epam.esm.persistence.model.specification.Specification;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -28,6 +27,6 @@ public interface TagRepository extends CreateDeleteRepository<Tag> {
 
     Tag getTopUserMostPopularTag();
 
-    Page<Tag> find(List<Specification<Tag>> orderSpecification, Pageable pageable);
+    Page<Tag> find(Specification<Tag> orderSpecification, Pageable pageable);
 
 }

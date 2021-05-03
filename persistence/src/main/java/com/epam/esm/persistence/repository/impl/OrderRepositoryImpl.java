@@ -1,14 +1,13 @@
 package com.epam.esm.persistence.repository.impl;
 
 import com.epam.esm.persistence.entity.Order;
+import com.epam.esm.persistence.model.page.Page;
+import com.epam.esm.persistence.model.page.PageImpl;
+import com.epam.esm.persistence.model.page.Pageable;
 import com.epam.esm.persistence.model.specification.FindByIdInSpecification;
 import com.epam.esm.persistence.model.specification.Specification;
 import com.epam.esm.persistence.repository.OrderRepository;
 import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +20,6 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 @Transactional
@@ -37,14 +35,14 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public Page<Order> find(List<Specification<Order>> orderSpecification, Pageable pageable) {
+    public Page<Order> find(Specification<Order> orderSpecification, Pageable pageable) {
         CriteriaBuilder cb = manager.getCriteriaBuilder();
         CriteriaQuery<Order> query = cb.createQuery(Order.class);
-        Root<Order> giftCertificateFrom = query.from(Order.class);
-        Predicate[] predicate = getPredicates(orderSpecification, cb, query,giftCertificateFrom);
-        query.where(predicate);
-        Long lastPage = getLastPage(cb);
-        TypedQuery<Order> exec = getPagedQuery(pageable, cb, query, giftCertificateFrom);
+        Root<Order> orderFrom = query.from(Order.class);
+        Predicate restriction = orderSpecification.toPredicate(orderFrom, query, cb);
+        query.where(restriction);
+        Integer lastPage = getLastPage(cb, pageable, orderSpecification);
+        TypedQuery<Order> exec = getPagedQuery(pageable, cb, query, orderFrom);
         List<Order> resultList = exec.getResultList();
         return new PageImpl<>(resultList, pageable, lastPage);
     }
@@ -52,34 +50,46 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public Optional<Order> findById(Long orderId) {
         Specification<Order> getById = new FindByIdInSpecification<>(List.of(orderId));
-        return Optional.ofNullable(DataAccessUtils.singleResult(find(List.of(getById), Pageable.unpaged()).getContent()));
+        return Optional.ofNullable(DataAccessUtils.singleResult(find(getById, Pageable.unpaged()).getContent()));
     }
 
-    private Predicate[] getPredicates(List<Specification<Order>> mySpecification, CriteriaBuilder cb, CriteriaQuery<Order> query, Root<Order> root) {
-        return mySpecification
-                .stream()
-                .map(specification -> specification.toPredicate(root, query, cb))
-                .collect(Collectors.toList()).toArray((new Predicate[0]));
-
-    }
-
-    private Long getLastPage(CriteriaBuilder cb) {
+    private Integer getLastPage(CriteriaBuilder cb, Pageable pageable, Specification<Order> specification) {
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-        countQuery.select(cb.count(countQuery.from(Order.class)));
-        return manager.createQuery(countQuery).getSingleResult();
+        Root<Order> certificateRoot = countQuery.from(Order.class);
+        countQuery.select(cb.count(certificateRoot));
+        Predicate restriction = specification.toPredicate(certificateRoot, countQuery, cb);
+        countQuery.where(restriction);
+        Long totalAmount = manager.createQuery(countQuery).getSingleResult();
+        Integer pageSize = pageable.getSize();
+        int amount = (int) (totalAmount / pageSize);
+        return totalAmount % pageSize == 0 ? amount : amount + 1;
     }
+
 
 
     private TypedQuery<Order> getPagedQuery(Pageable pageable, CriteriaBuilder cb, CriteriaQuery<Order> query, Root<Order> from) {
         if (pageable.isPaged()) {
-            long pageNumber = pageable.getOffset();
-            int pageSize = pageable.getPageSize();
-            query.orderBy((QueryUtils.toOrders(pageable.getSort(), from, cb)));
+            int pageNumber = pageable.getPage();
+            int pageSize = pageable.getSize();
+            setSort(pageable, cb, query, from);
             TypedQuery<Order> exec = manager.createQuery(query);
-            exec.setFirstResult(Math.toIntExact(pageNumber));
-            exec.setMaxResults((pageSize));
+            exec.setFirstResult(pageNumber);
+            exec.setMaxResults(pageSize);
             return exec;
         }
         return manager.createQuery(query);
+    }
+
+    private void setSort(Pageable pageable, CriteriaBuilder cb, CriteriaQuery<Order> query, Root<Order> from) {
+        String sort = pageable.getSort();
+        if (sort == null) {
+            query.orderBy(cb.asc(from.get("id")));
+        } else {
+            if ("desc".equalsIgnoreCase(pageable.getSortDir())) {
+                query.orderBy(cb.desc(from.get(sort)));
+            } else {
+                query.orderBy(cb.asc(from.get(sort)));
+            }
+        }
     }
 }

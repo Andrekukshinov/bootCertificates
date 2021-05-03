@@ -1,6 +1,9 @@
 package com.epam.esm.service.service.impl;
 
 import com.epam.esm.persistence.entity.User;
+import com.epam.esm.persistence.model.page.Page;
+import com.epam.esm.persistence.model.page.PageImpl;
+import com.epam.esm.persistence.model.page.Pageable;
 import com.epam.esm.persistence.repository.UserRepository;
 import com.epam.esm.service.dto.user.UserInfoDto;
 import com.epam.esm.service.dto.user.UserOrderDto;
@@ -8,11 +11,11 @@ import com.epam.esm.service.exception.EntityNotFoundException;
 import com.epam.esm.service.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -36,7 +39,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserInfoDto> getAll(Pageable pageable) {
-        Page<User> all = userRepository.findAll(pageable);
-        return all.map(user -> mapper.map(user, UserInfoDto.class));
+        Page<User> page = userRepository.findAll(pageable);
+        List<UserInfoDto> contentDto = page.getContent().stream()
+                .map(order -> mapper.map(order, UserInfoDto.class))
+                .collect(Collectors.toList());
+        return new PageImpl<>(contentDto, pageable, page.getLastPage());
     }
 }

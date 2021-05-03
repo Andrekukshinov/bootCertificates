@@ -15,7 +15,6 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "audit_history")
-//@EntityListeners(EntityListener.class)
 public class History {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,5 +1,7 @@
 package com.epam.esm.web.controller;
 
+import com.epam.esm.persistence.model.page.Page;
+import com.epam.esm.persistence.model.page.Pageable;
 import com.epam.esm.service.dto.certificate.GiftCertificateTagDto;
 import com.epam.esm.service.exception.ValidationException;
 import com.epam.esm.service.model.RequestParams;
@@ -8,11 +10,7 @@ import com.epam.esm.service.valiation.PatchGroup;
 import com.epam.esm.service.valiation.SaveGroup;
 import com.epam.esm.service.valiation.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +27,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -40,12 +40,10 @@ public class GiftCertificateController {
     private static final String ID = "id";
 
     private final GiftCertificateService certificateService;
-    private final PagedResourcesAssembler<GiftCertificateTagDto> assembler;
 
     @Autowired
-    public GiftCertificateController(GiftCertificateService certificateService, PagedResourcesAssembler<GiftCertificateTagDto> assembler) {
+    public GiftCertificateController(GiftCertificateService certificateService) {
         this.certificateService = certificateService;
-        this.assembler = assembler;
     }
 
     @GetMapping("/{id}")
@@ -57,7 +55,7 @@ public class GiftCertificateController {
     }
 
     private void addMappingToAll(RepresentationModel<?> certificate) {
-        certificate.add((linkTo(methodOn(GiftCertificateController.class).getByParam(null, null, null)).withRel("all")));
+        certificate.add((linkTo(methodOn(GiftCertificateController.class).getByParam(new HashMap<>(), null)).withRel("all")));
     }
 
     @PostMapping
@@ -91,13 +89,66 @@ public class GiftCertificateController {
     }
 
     @GetMapping()
-    public ResponseEntity<PagedModel<EntityModel<GiftCertificateTagDto>>> getByParam(RequestParams specification, Pageable pageable, @RequestParam Map<String, String> requestParameters) {
-        System.out.println(requestParameters);
-        Page<GiftCertificateTagDto> bySpecification = certificateService.getBySpecification(specification, pageable);
-        PagedModel<EntityModel<GiftCertificateTagDto>> entityModels = assembler.toModel(bySpecification);
-        GiftCertificateTagDto giftCertificateTagDto = bySpecification.getContent().get(0);
-        giftCertificateTagDto.add(linkTo(methodOn(GiftCertificateController.class).getByParam(null, null, requestParameters)).withSelfRel());
-        return ResponseEntity.ok(entityModels);
+    public ResponseEntity<CollectionModel<GiftCertificateTagDto>> getByParam(@RequestParam(required = false) Map<String, String> requestParams, @RequestParam(required = false) Set<String> tagNames) {
+        Pageable pageable = getPageable(requestParams);
+        RequestParams specification = getRequestParams(requestParams, tagNames);
+        Page<GiftCertificateTagDto> page = certificateService.getBySpecification(specification, pageable);
+        CollectionModel<GiftCertificateTagDto> of = getBuiltLinks(requestParams, tagNames, page);
+        return ResponseEntity.ok(of);
     }
 
+    private CollectionModel<GiftCertificateTagDto> getBuiltLinks(Map<String, String> requestParams, Set<String> tagNames, Page<GiftCertificateTagDto> page) {
+        CollectionModel<GiftCertificateTagDto> of = CollectionModel.of(page.getContent());
+        of.add(linkTo(
+                methodOn(GiftCertificateController.class)
+                        .getByParam(getPageParamMap(requestParams, page.getFirstPage()), tagNames))
+                .withRel("first")
+        );
+        if (page.hasPrevious()) {
+            of.add(linkTo(
+                    methodOn(GiftCertificateController.class)
+                            .getByParam(getPageParamMap(requestParams, page.getPreviousPage()), tagNames))
+                    .withRel("previous")
+            );
+        }
+        of.add(linkTo(
+                methodOn(GiftCertificateController.class)
+                        .getByParam(getPageParamMap(requestParams, page.getPage()), tagNames))
+                .withRel("this")
+        );
+        if (page.hasNext()) {
+            of.add(linkTo(
+                    methodOn(GiftCertificateController.class)
+                            .getByParam(getPageParamMap(requestParams, page.getNextPage()), tagNames))
+                    .withRel("next")
+            );
+        }
+        of.add(linkTo(
+                methodOn(GiftCertificateController.class)
+                        .getByParam(getPageParamMap(requestParams, page.getLastPage()), tagNames))
+                .withRel("last")
+        );
+        return of;
+    }
+
+    private RequestParams getRequestParams(Map<String, String> requestParams, Set<String> tagNames) {
+        String description = requestParams.get("certificateDescription");
+        String certificateName = requestParams.get("certificateName");
+        return RequestParams.builder().setCertificateDescription(description).setTagNames(tagNames).setCertificateName(certificateName).build();
+    }
+
+    private Map<String, String> getPageParamMap(Map<String, String> requestParams, Integer page) {
+        HashMap<String, String> result = new HashMap<>(requestParams);
+        result.put("page", page.toString());
+        return result;
+    }
+
+    private Pageable getPageable(Map<String, String> requestParams) {
+        String pages = requestParams.get("page");
+        Integer page = Integer.valueOf(pages);
+        Integer size = Integer.valueOf(requestParams.get("size"));
+        String sort = requestParams.get("sort");
+        String sortDir = requestParams.get("sortDir");
+        return new Pageable(page, size, sort, sortDir);
+    }
 }

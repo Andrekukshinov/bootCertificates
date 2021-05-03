@@ -1,11 +1,12 @@
 package com.epam.esm.persistence.repository.impl;
 
 import com.epam.esm.persistence.entity.User;
+import com.epam.esm.persistence.model.page.Page;
+import com.epam.esm.persistence.model.page.PageImpl;
+import com.epam.esm.persistence.model.page.Pageable;
+import com.epam.esm.persistence.model.specification.FindAllSpecification;
+import com.epam.esm.persistence.model.specification.Specification;
 import com.epam.esm.persistence.repository.UserRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.List;
 import java.util.Optional;
@@ -38,29 +40,47 @@ public class UserRepositoryImpl implements UserRepository {
         Root<User> from = query.from(User.class);
         query.select(from);
         TypedQuery<User> exec = getPagedQuery(pageable, cb, query, from);
-        Long lastPage = getLastPage(cb);
-
+        Integer lastPage = getLastPage(cb, pageable, new FindAllSpecification<>());
         List<User> resultList = exec.getResultList();
         return new PageImpl<>(resultList, pageable, lastPage);
     }
 
-    private TypedQuery<User> getPagedQuery(Pageable pageable, CriteriaBuilder cb, CriteriaQuery<User> query, Root<User> from) {
-        if (pageable.isPaged()) {
-            long pageNumber = pageable.getOffset();
-            int pageSize = pageable.getPageSize();
-            query.orderBy((QueryUtils.toOrders(pageable.getSort(), from, cb)));
-            TypedQuery<User> exec = manager.createQuery(query);
-            exec.setFirstResult(Math.toIntExact(pageNumber));
-            exec.setMaxResults((pageSize));
-            return exec;
-        }
-        return  manager.createQuery(query);
+    private Integer getLastPage(CriteriaBuilder cb, Pageable pageable, Specification<User> specification) {
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<User> certificateRoot = countQuery.from(User.class);
+        countQuery.select(cb.count(certificateRoot));
+        Predicate restriction = specification.toPredicate(certificateRoot, countQuery, cb);
+        countQuery.where(restriction);
+        Long totalAmount = manager.createQuery(countQuery).getSingleResult();
+        Integer pageSize = pageable.getSize();
+        int amount = (int) (totalAmount / pageSize);
+        return totalAmount % pageSize == 0 ? amount : amount + 1;
     }
 
-    private Long getLastPage(CriteriaBuilder cb) {
-        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-        countQuery.select(cb.count(countQuery.from(User.class)));
-        return manager.createQuery(countQuery).getSingleResult();
+    private TypedQuery<User> getPagedQuery(Pageable pageable, CriteriaBuilder cb, CriteriaQuery<User> query, Root<User> from) {
+        if (pageable.isPaged()) {
+            int pageNumber = pageable.getPage();
+            int pageSize = pageable.getSize();
+            setSort(pageable, cb, query, from);
+            TypedQuery<User> exec = manager.createQuery(query);
+            exec.setFirstResult(pageNumber);
+            exec.setMaxResults(pageSize);
+            return exec;
+        }
+        return manager.createQuery(query);
+    }
+
+    private void setSort(Pageable pageable, CriteriaBuilder cb, CriteriaQuery<User> query, Root<User> from) {
+        String sort = pageable.getSort();
+        if (sort == null) {
+            query.orderBy(cb.asc(from.get("id")));
+        } else {
+            if ("desc".equalsIgnoreCase(pageable.getSortDir())) {
+                query.orderBy(cb.desc(from.get(sort)));
+            } else {
+                query.orderBy(cb.asc(from.get(sort)));
+            }
+        }
     }
 
 }

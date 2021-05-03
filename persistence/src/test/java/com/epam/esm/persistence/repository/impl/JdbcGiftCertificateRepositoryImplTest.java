@@ -4,7 +4,7 @@ import com.epam.esm.persistence.config.TestConfiguration;
 import com.epam.esm.persistence.entity.GiftCertificate;
 import com.epam.esm.persistence.entity.Tag;
 import com.epam.esm.persistence.entity.enums.GiftCertificateStatus;
-import com.epam.esm.persistence.model.specification.EmptySpecification;
+import com.epam.esm.persistence.model.specification.FindAllCertificatesSpecification;
 import com.epam.esm.persistence.model.specification.FindByIdInSpecification;
 import com.epam.esm.persistence.repository.GiftCertificateRepository;
 import org.junit.jupiter.api.Test;
@@ -208,7 +208,7 @@ class JdbcGiftCertificateRepositoryImplTest {
     @Rollback
     void testFindBySpecificationShouldReturnListOf3Certificates() {
         List<Long> ids = List.of(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L);
-        Page<GiftCertificate> page = repository.findBySpecification(List.of(new FindByIdInSpecification<>(ids)), FIRST_THREE_CERTIFICATES_PAGEABLE);
+        Page<GiftCertificate> page = repository.findBySpecification(new FindByIdInSpecification<>(ids), FIRST_THREE_CERTIFICATES_PAGEABLE);
 
         assertThat(page.getContent(), is(EXPECTED_PAGE_3_VALUES.getContent()));
     }
@@ -216,7 +216,7 @@ class JdbcGiftCertificateRepositoryImplTest {
     @Test
     @Rollback
     void testFindBySpecificationShouldReturnListOfAllCertificates() {
-        Page<GiftCertificate> page = repository.findBySpecification(List.of(new EmptySpecification<>()), ALL_CERTIFICATES_PAGEABLE);
+        Page<GiftCertificate> page = repository.findBySpecification(new FindAllCertificatesSpecification(), ALL_CERTIFICATES_PAGEABLE);
 
         assertThat(page.getContent(), is(EXPECTED_PAGE_ALL_ACTIVE.getContent()));
     }

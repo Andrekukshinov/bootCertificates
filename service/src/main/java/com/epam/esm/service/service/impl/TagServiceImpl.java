@@ -1,7 +1,10 @@
 package com.epam.esm.service.service.impl;
 
 import com.epam.esm.persistence.entity.Tag;
-import com.epam.esm.persistence.model.specification.EmptySpecification;
+import com.epam.esm.persistence.model.page.Page;
+import com.epam.esm.persistence.model.page.PageImpl;
+import com.epam.esm.persistence.model.page.Pageable;
+import com.epam.esm.persistence.model.specification.FindAllSpecification;
 import com.epam.esm.persistence.model.specification.TagNameSpecification;
 import com.epam.esm.persistence.repository.TagRepository;
 import com.epam.esm.service.dto.TagDto;
@@ -15,8 +18,6 @@ import com.epam.esm.service.validation.Validator;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class TagServiceImpl implements TagService {
@@ -48,8 +50,7 @@ public class TagServiceImpl implements TagService {
     public TagDto save(TagDto tagDto) {
         Tag tag = modelMapper.map(tagDto, Tag.class);
         String name = tag.getName();
-        Page<Tag> tagPage = tagRepository.find(List.of(new TagNameSpecification(tag.getName())), Pageable.unpaged());
-        Optional<Tag> tagOptional = Optional.ofNullable(DataAccessUtils.singleResult(tagPage.getContent()));
+        Optional<Tag> tagOptional = getTagFromRepo(name);
         tagOptional.ifPresent((ignored) -> {
             throw new EntityAlreadyExistsException(String.format(ALREADY_EXISTS_PATTERN, name));
         });
@@ -78,8 +79,11 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public Page<TagDto> getAll(Pageable pageable) {
-        Page<Tag> tagPage = tagRepository.find(List.of(new EmptySpecification<>()),pageable);
-        return tagPage.map(tag -> modelMapper.map(tag, TagDto.class));
+        Page<Tag> page = tagRepository.find(new FindAllSpecification<Tag>(), pageable);
+        List<TagDto> contentDto = page.getContent().stream()
+                .map(order -> modelMapper.map(order, TagDto.class))
+                .collect(Collectors.toList());
+        return new PageImpl<>(contentDto, pageable, page.getLastPage());
     }
 
     @Override
@@ -113,10 +117,8 @@ public class TagServiceImpl implements TagService {
                     () -> {throw new InvalidEntityException("invalid tag with id = " + tagId);}
             );
         } else {
-            TagNameSpecification specification = new TagNameSpecification(name);
-            Page<Tag> tagPage = tagRepository.find(List.of(specification), Pageable.unpaged());
-            Optional<Tag> optionalTag = Optional.ofNullable(DataAccessUtils.singleResult(tagPage.getContent()));
-            optionalTag.ifPresentOrElse(
+            Optional<Tag> tagOptional = getTagFromRepo(name);
+            tagOptional.ifPresentOrElse(
                     result::add,
                     () -> {
                         Tag saved = tagRepository.save(tag);
@@ -124,6 +126,11 @@ public class TagServiceImpl implements TagService {
                     }
             );
         }
+    }
+
+    private Optional<Tag> getTagFromRepo(String name) {
+        Page<Tag> tagPage = tagRepository.find(new TagNameSpecification(name), Pageable.unpaged());
+        return Optional.ofNullable(DataAccessUtils.singleResult(tagPage.getContent()));
     }
 
 //    @Override

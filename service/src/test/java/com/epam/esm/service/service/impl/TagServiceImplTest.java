@@ -3,6 +3,7 @@ package com.epam.esm.service.service.impl;
 import com.epam.esm.persistence.entity.Tag;
 import com.epam.esm.persistence.repository.TagRepository;
 import com.epam.esm.service.dto.TagDto;
+import com.epam.esm.service.exception.DeleteTagInUseException;
 import com.epam.esm.service.exception.EntityAlreadyExistsException;
 import com.epam.esm.service.exception.EntityNotFoundException;
 import com.epam.esm.service.exception.ValidationException;
@@ -12,7 +13,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageImpl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -49,45 +53,46 @@ class TagServiceImplTest {
     }
 
     @Test
-    void testSaveTagShouldVerifyRepositoryCallWhenObjectValid() throws ValidationException {
-//        when(tagRepository.find(any(), any())).thenReturn(Optional.empty());
-        when(modelMapper.map(any(), any())).thenReturn((PEOPLE_TAG));
+    void testSaveTagShouldVerifyRepositoryCallWhenObjectValid() {
+        when(tagRepository.find(any(), any())).thenReturn(new PageImpl<>(new ArrayList<>()));
+        when(tagRepository.save(any())).thenReturn((PEOPLE_TAG));
+        when(modelMapper.map(PEOPLE_TAG_DTO, Tag.class)).thenReturn((PEOPLE_TAG));
+        when(modelMapper.map(PEOPLE_TAG, TagDto.class)).thenReturn((PEOPLE_TAG_DTO));
 
-        service.save(PEOPLE_TAG_DTO);
+        TagDto saved = service.save(PEOPLE_TAG_DTO);
 
+        assertThat(saved, is(PEOPLE_TAG_DTO));
         verify(tagRepository, times(1)).save(any());
-//        verify(tagRepository, times(1)).findByName(any());
-    }
-
-    @Test
-    void testSaveTagShouldThrowValidationExceptionWhenInvalidObject() throws ValidationException {
-//        when(tagRepository.findByName(any())).thenReturn(Optional.empty());
-        when(modelMapper.map(any(), any())).thenReturn(PEOPLE_TAG);
-
-        assertThrows(ValidationException.class, () -> service.save(PEOPLE_TAG_DTO));
-
-        verify(tagRepository, times(0)).save(any());
-//        verify(tagRepository, times(0)).findByName(any());
+        verify(tagRepository, times(1)).find(any(), any());
     }
 
     @Test
     void testSaveTagShouldEntityAlreadyExistsExceptionWhenTagExists() throws ValidationException {
-//        when(tagRepository.findByName(any())).thenReturn(Optional.of(PEOPLE_TAG));
+        when(tagRepository.find(any(), any())).thenReturn(new PageImpl<>(List.of(PEOPLE_TAG)));
         when(modelMapper.map(any(), any())).thenReturn((PEOPLE_TAG));
         when(modelMapper.map(any(), any())).thenReturn(PEOPLE_TAG);
 
         assertThrows(EntityAlreadyExistsException.class, () -> service.save(PEOPLE_TAG_DTO));
 
         verify(tagRepository, times(0)).save(any());
-//        verify(tagRepository, times(1)).findByName(any());
+        verify(tagRepository, times(1)).find(any(), any());
     }
 
     @Test
-    void testDeleteTagShouldInvokeServiceAndRepository() {
+    void testDeleteTagShouldInvokeRepositoryIfNotInvokedWithCertificates() {
         service.deleteTag(CERTIFICATE_ID_DEFAULT_ID);
 
         verify(tagRepository, times(1)).delete(any());
+        verify(tagRepository, times(1)).findInCertificates(any());
+    }
 
+    @Test
+    void testDeleteTagShouldThrowDeleteTagInUseExceptionIfInvokedWithCertificates() {
+        when(tagRepository.findInCertificates(any())).thenReturn(Optional.of(PEOPLE_TAG));
+
+        assertThrows(DeleteTagInUseException.class, () -> service.deleteTag(PEOPLE_TAG.getId()) );
+        
+        verify(tagRepository, times(1)).findInCertificates(any());
     }
 
     @Test
