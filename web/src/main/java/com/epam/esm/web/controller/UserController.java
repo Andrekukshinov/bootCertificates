@@ -11,6 +11,7 @@ import com.epam.esm.service.exception.ValidationException;
 import com.epam.esm.service.service.OrderService;
 import com.epam.esm.service.service.TagService;
 import com.epam.esm.service.service.UserService;
+import com.epam.esm.web.helper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.ResponseEntity;
@@ -37,13 +38,14 @@ public class UserController {
     private final UserService service;
     private final OrderService orderService;
     private final TagService tagService;
-
+    private final PageHelper pageHelper;
 
     @Autowired
-    public UserController(UserService service, OrderService orderService, TagService tagService) {
+    public UserController(UserService service, OrderService orderService, TagService tagService, PageHelper pageHelper) {
         this.service = service;
         this.orderService = orderService;
         this.tagService = tagService;
+        this.pageHelper = pageHelper;
     }
 
     @GetMapping("/{id}")
@@ -57,41 +59,41 @@ public class UserController {
 
     @GetMapping()
     public ResponseEntity<CollectionModel<UserInfoDto>> getAllUsers(@RequestParam(required = false) Map<String, String> requestParams) {
-        Pageable pageable = getPageable(requestParams);
+        Pageable pageable = pageHelper.getPageable(requestParams);
         Page<UserInfoDto> page = service.getAll(pageable);
-        CollectionModel<UserInfoDto> of = getUserBuiltLinks(requestParams, page);
+        CollectionModel<UserInfoDto> of = getUsersBuiltLinks(requestParams, page);
         return ResponseEntity.ok(of);
     }
 
-    private CollectionModel<UserInfoDto> getUserBuiltLinks(Map<String, String> requestParams, Page<UserInfoDto> page) {
+    private CollectionModel<UserInfoDto> getUsersBuiltLinks(Map<String, String> requestParams, Page<UserInfoDto> page) {
         CollectionModel<UserInfoDto> of = CollectionModel.of(page.getContent());
         of.add(linkTo(
                 methodOn(UserController.class)
-                        .getAllUsers( getPageParamMap(requestParams, page.getFirstPage())))
+                        .getAllUsers(pageHelper.getPageParamMap(requestParams, page.getFirstPage())))
                 .withRel("first")
         );
         if (page.hasPrevious()) {
             of.add(linkTo(
                     methodOn(UserController.class)
-                            .getAllUsers(getPageParamMap(requestParams, page.getPreviousPage())))
+                            .getAllUsers(pageHelper.getPageParamMap(requestParams, page.getPreviousPage())))
                     .withRel("previous")
             );
         }
         of.add(linkTo(
                 methodOn(UserController.class)
-                        .getAllUsers(getPageParamMap(requestParams, page.getPage())))
+                        .getAllUsers(pageHelper.getPageParamMap(requestParams, page.getPage())))
                 .withRel("this")
         );
         if (page.hasNext()) {
             of.add(linkTo(
                     methodOn(UserController.class)
-                            .getAllUsers(getPageParamMap(requestParams, page.getNextPage())))
+                            .getAllUsers(pageHelper.getPageParamMap(requestParams, page.getNextPage())))
                     .withRel("next")
             );
         }
         of.add(linkTo(
                 methodOn(UserController.class)
-                        .getAllUsers(getPageParamMap(requestParams, page.getLastPage())))
+                        .getAllUsers(pageHelper.getPageParamMap(requestParams, page.getLastPage())))
                 .withRel("last")
         );
         return of;
@@ -118,7 +120,7 @@ public class UserController {
 
     @GetMapping("/{userId}/orders")
     public ResponseEntity<CollectionModel<OrderDetailsDto>> getUserAllOrders(@PathVariable Long userId, @RequestParam Map<String, String> requestParams) {
-        Pageable pageable = getPageable(requestParams);
+        Pageable pageable = pageHelper.getPageable(requestParams);
         Page<OrderDetailsDto> page = orderService.getAllUserOrders(userId, pageable);
         CollectionModel<OrderDetailsDto> of = getOrdersBuiltLinks(userId, requestParams, page);
         return ResponseEntity.ok(of);
@@ -128,31 +130,31 @@ public class UserController {
         CollectionModel<OrderDetailsDto> of = CollectionModel.of(page.getContent());
         of.add(linkTo(
                 methodOn(UserController.class)
-                        .getUserAllOrders(userId, getPageParamMap(requestParams, page.getFirstPage())))
+                        .getUserAllOrders(userId, pageHelper.getPageParamMap(requestParams, page.getFirstPage())))
                 .withRel("first")
         );
         if (page.hasPrevious()) {
             of.add(linkTo(
                     methodOn(UserController.class)
-                            .getUserAllOrders(userId, getPageParamMap(requestParams, page.getPreviousPage())))
+                            .getUserAllOrders(userId, pageHelper.getPageParamMap(requestParams, page.getPreviousPage())))
                     .withRel("previous")
             );
         }
         of.add(linkTo(
                 methodOn(UserController.class)
-                        .getUserAllOrders(userId, getPageParamMap(requestParams, page.getPage())))
+                        .getUserAllOrders(userId, pageHelper.getPageParamMap(requestParams, page.getPage())))
                 .withRel("this")
         );
         if (page.hasNext()) {
             of.add(linkTo(
                     methodOn(UserController.class)
-                            .getUserAllOrders(userId, getPageParamMap(requestParams, page.getNextPage())))
+                            .getUserAllOrders(userId, pageHelper.getPageParamMap(requestParams, page.getNextPage())))
                     .withRel("next")
             );
         }
         of.add(linkTo(
                 methodOn(UserController.class)
-                        .getUserAllOrders(userId, getPageParamMap(requestParams, page.getLastPage())))
+                        .getUserAllOrders(userId, pageHelper.getPageParamMap(requestParams, page.getLastPage())))
                 .withRel("last")
         );
         return of;
@@ -165,21 +167,5 @@ public class UserController {
         tag.add(linkTo(methodOn(UserController.class).getTopUserMostPopularTag()).withSelfRel());
         tag.add(linkTo(methodOn(TagController.class).getAll(new HashMap<>())).withRel("all"));
         return ResponseEntity.ok(tag);
-    }
-
-    private Map<String, String> getPageParamMap(Map<String, String> requestParams, Integer page) {
-        HashMap<String, String> result = new HashMap<>(requestParams);
-        result.put("page", page.toString());
-        return result;
-    }
-
-    //todo validate input
-    private Pageable getPageable(Map<String, String> requestParams) {
-        String pages = requestParams.get("page");
-        Integer page = Integer.valueOf(pages);
-        Integer size = Integer.valueOf(requestParams.get("size"));
-        String sort = requestParams.get("sort");
-        String sortDir = requestParams.get("sortDir");
-        return new Pageable(page, size, sort, sortDir);
     }
 }

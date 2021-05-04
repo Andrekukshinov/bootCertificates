@@ -5,6 +5,7 @@ import com.epam.esm.persistence.model.page.Pageable;
 import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.service.TagService;
 import com.epam.esm.service.valiation.SaveGroup;
+import com.epam.esm.web.helper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
@@ -31,11 +32,12 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class TagController {
 
     private final TagService tagService;
-
+    private final PageHelper pageHelper;
 
     @Autowired
-    public TagController(TagService tagService) {
+    public TagController(TagService tagService, PageHelper pageHelper) {
         this.tagService = tagService;
+        this.pageHelper = pageHelper;
     }
 
     @PostMapping
@@ -67,7 +69,7 @@ public class TagController {
 
     @GetMapping()
     public ResponseEntity<CollectionModel<TagDto>> getAll(@RequestParam Map<String, String> requestParams) {
-        Pageable pageable = getPageable(requestParams);
+        Pageable pageable = pageHelper.getPageable(requestParams);
         Page<TagDto> page = tagService.getAll(pageable);
         CollectionModel<TagDto> of = getTagsBuiltLinks(requestParams, page);
         return ResponseEntity.ok(of);
@@ -77,50 +79,33 @@ public class TagController {
         CollectionModel<TagDto> of = CollectionModel.of(page.getContent());
         of.add(linkTo(
                 methodOn(TagController.class)
-                        .getAll(getPageParamMap(requestParams, page.getFirstPage())))
+                        .getAll(pageHelper.getPageParamMap(requestParams, page.getFirstPage())))
                 .withRel("first")
         );
         if (page.hasPrevious()) {
             of.add(linkTo(
                     methodOn(TagController.class)
-                            .getAll(getPageParamMap(requestParams, page.getPreviousPage())))
+                            .getAll(pageHelper.getPageParamMap(requestParams, page.getPreviousPage())))
                     .withRel("this")
             );
         }
         of.add(linkTo(
                 methodOn(TagController.class)
-                        .getAll(getPageParamMap(requestParams, page.getPage())))
+                        .getAll(pageHelper.getPageParamMap(requestParams, page.getPage())))
                 .withRel("this")
         );
         if (page.hasNext()) {
             of.add(linkTo(
                     methodOn(TagController.class)
-                            .getAll(getPageParamMap(requestParams, page.getNextPage())))
+                            .getAll(pageHelper.getPageParamMap(requestParams, page.getNextPage())))
                     .withRel("this")
             );
         }
         of.add(linkTo(
                 methodOn(TagController.class)
-                        .getAll(getPageParamMap(requestParams, page.getLastPage())))
+                        .getAll(pageHelper.getPageParamMap(requestParams, page.getLastPage())))
                 .withRel("last")
         );
         return of;
     }
-
-    private Map<String, String> getPageParamMap(Map<String, String> requestParams, Integer page) {
-        HashMap<String, String> result = new HashMap<>(requestParams);
-        result.put("page", page.toString());
-        return result;
-    }
-
-    //todo validate input
-    private Pageable getPageable(Map<String, String> requestParams) {
-        String pages = requestParams.get("page");
-        Integer page = Integer.valueOf(pages);
-        Integer size = Integer.valueOf(requestParams.get("size"));
-        String sort = requestParams.get("sort");
-        String sortDir = requestParams.get("sortDir");
-        return new Pageable(page, size, sort, sortDir);
-    }
-
 }

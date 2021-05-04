@@ -9,6 +9,7 @@ import com.epam.esm.service.service.GiftCertificateService;
 import com.epam.esm.service.valiation.PatchGroup;
 import com.epam.esm.service.valiation.SaveGroup;
 import com.epam.esm.service.valiation.UpdateGroup;
+import com.epam.esm.web.helper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.RepresentationModel;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,10 +42,12 @@ public class GiftCertificateController {
     private static final String ID = "id";
 
     private final GiftCertificateService certificateService;
+    private final PageHelper pageHelper;
 
     @Autowired
-    public GiftCertificateController(GiftCertificateService certificateService) {
+    public GiftCertificateController(GiftCertificateService certificateService, PageHelper pageHelper) {
         this.certificateService = certificateService;
+        this.pageHelper = pageHelper;
     }
 
     @GetMapping("/{id}")
@@ -90,7 +94,7 @@ public class GiftCertificateController {
 
     @GetMapping()
     public ResponseEntity<CollectionModel<GiftCertificateTagDto>> getByParam(@RequestParam(required = false) Map<String, String> requestParams, @RequestParam(required = false) Set<String> tagNames) {
-        Pageable pageable = getPageable(requestParams);
+        Pageable pageable = pageHelper.getPageable(requestParams);
         RequestParams specification = getRequestParams(requestParams, tagNames);
         Page<GiftCertificateTagDto> page = certificateService.getBySpecification(specification, pageable);
         CollectionModel<GiftCertificateTagDto> of = getBuiltLinks(requestParams, tagNames, page);
@@ -101,55 +105,43 @@ public class GiftCertificateController {
         CollectionModel<GiftCertificateTagDto> of = CollectionModel.of(page.getContent());
         of.add(linkTo(
                 methodOn(GiftCertificateController.class)
-                        .getByParam(getPageParamMap(requestParams, page.getFirstPage()), tagNames))
+                        .getByParam(pageHelper.getPageParamMap(requestParams, page.getFirstPage()), getTagNames(tagNames)))
                 .withRel("first")
         );
         if (page.hasPrevious()) {
             of.add(linkTo(
                     methodOn(GiftCertificateController.class)
-                            .getByParam(getPageParamMap(requestParams, page.getPreviousPage()), tagNames))
+                            .getByParam(pageHelper.getPageParamMap(requestParams, page.getPreviousPage()), getTagNames(tagNames)))
                     .withRel("previous")
             );
         }
         of.add(linkTo(
                 methodOn(GiftCertificateController.class)
-                        .getByParam(getPageParamMap(requestParams, page.getPage()), tagNames))
+                        .getByParam(pageHelper.getPageParamMap(requestParams, page.getPage()), getTagNames(tagNames)))
                 .withRel("this")
         );
         if (page.hasNext()) {
             of.add(linkTo(
                     methodOn(GiftCertificateController.class)
-                            .getByParam(getPageParamMap(requestParams, page.getNextPage()), tagNames))
+                            .getByParam(pageHelper.getPageParamMap(requestParams, page.getNextPage()), getTagNames(tagNames)))
                     .withRel("next")
             );
         }
         of.add(linkTo(
                 methodOn(GiftCertificateController.class)
-                        .getByParam(getPageParamMap(requestParams, page.getLastPage()), tagNames))
+                        .getByParam(pageHelper.getPageParamMap(requestParams, page.getLastPage()), getTagNames(tagNames)))
                 .withRel("last")
         );
         return of;
+    }
+
+    private Set<String> getTagNames(Set<String> tagNames) {
+        return tagNames == null ? new HashSet<>() : tagNames;
     }
 
     private RequestParams getRequestParams(Map<String, String> requestParams, Set<String> tagNames) {
         String description = requestParams.get("certificateDescription");
         String certificateName = requestParams.get("certificateName");
         return RequestParams.builder().setCertificateDescription(description).setTagNames(tagNames).setCertificateName(certificateName).build();
-    }
-
-    private Map<String, String> getPageParamMap(Map<String, String> requestParams, Integer page) {
-        HashMap<String, String> result = new HashMap<>(requestParams);
-        result.put("page", page.toString());
-        return result;
-    }
-
-    //todo validate input
-    private Pageable getPageable(Map<String, String> requestParams) {
-        String pages = requestParams.get("page");
-        Integer page = Integer.valueOf(pages);
-        Integer size = Integer.valueOf(requestParams.get("size"));
-        String sort = requestParams.get("sort");
-        String sortDir = requestParams.get("sortDir");
-        return new Pageable(page, size, sort, sortDir);
     }
 }

@@ -102,11 +102,6 @@ public class TagServiceImpl implements TagService {
         return modelMapper.map(tagRepository.getTopUserMostPopularTag(), TagDto.class);
     }
 
-    //fixme
-    // as an option: split into set of tags (all with id and the rest) => findAllByIds => compare size before
-    // repo call and after if size differs => iterate over bd tags and find extra id + throw exception
-    // with invalid id
-    // the other set (with name) save if absent, others to be found and persistent
     private void addSavedTag(Set<Tag> result, Tag tag) {
         Long tagId = tag.getId();
         String name = tag.getName();
@@ -114,7 +109,9 @@ public class TagServiceImpl implements TagService {
             Optional<Tag> optionalTag = tagRepository.findById(tagId);
             optionalTag.ifPresentOrElse(
                     result::add,
-                    () -> {throw new InvalidEntityException("invalid tag with id = " + tagId);}
+                    () -> {
+                        throw new InvalidEntityException("invalid tag with id = " + tagId);
+                    }
             );
         } else {
             Optional<Tag> tagOptional = getTagFromRepo(name);
@@ -132,74 +129,4 @@ public class TagServiceImpl implements TagService {
         Page<Tag> tagPage = tagRepository.find(new TagNameSpecification(name), Pageable.unpaged());
         return Optional.ofNullable(DataAccessUtils.singleResult(tagPage.getContent()));
     }
-
-//    @Override
-//    @Transactional
-//    public Set<TagDto> saveAll(Set<Tag> tagToBeSaved) {
-////        reslut
-//
-//        Set<String> tagNames = tagToBeSaved
-//                .stream()
-//                .map(Tag::getName)
-//                .collect(Collectors.toSet());
-//        Set<Tag> repositoryTags = tagRepository.findTagsByNames(tagNames);
-//
-//
-//
-////        tags.fe()
-////        if(id!=null)
-////        {
-////            tagRepository.findById(id)
-////        } else {
-////            tagRepository.findByName(id)
-////        }
-//
-//        Set<String> repositoryTagsNames = repositoryTags
-//                .stream()
-//                .map(Tag::getName)
-//                .collect(Collectors.toSet());
-//
-//        Set<Tag> absentTags = tagToBeSaved
-//                .stream()
-//                .filter(tag -> !repositoryTagsNames.contains(tag.getName()))
-//                .collect(Collectors.toSet());
-//        Set<Tag> savedTags = tagRepository.saveAll(absentTags);
-//        Set<Tag> result = new HashSet<>(savedTags);
-//        result.addAll(repositoryTags);
-//        return result.stream().map(tag -> modelMapper.map(tag, TagDto.class)).collect(Collectors.toSet());
-//    }
 }
-//  @Override
-//    @Transactional
-//    public Set<TagDto> saveAll(Set<Tag> tagToBeSaved) {
-//        Set<Tag> result = new HashSet<>();
-//
-//        for (Tag tag : tagToBeSaved) {
-//            addSavedTag(result, tag);
-//        }
-//        return result
-//                .stream()
-//                .map(tag -> modelMapper.map(tag, TagDto.class))
-//                .collect(Collectors.toSet());
-//    }
-//
-//    private void addSavedTag(Set<Tag> result, Tag tag) {
-//        Long tagId = tag.getId();
-//        String name = tag.getName();
-//        if (tagId != null) {
-//            Optional<Tag> optionalTag = tagRepository.findById(tagId);
-//            optionalTag.ifPresentOrElse(
-//                    result::add,
-//                    () -> {throw new InvalidEntityException("invalid tag with id = " + tagId);}
-//            );
-//        } else {
-//            Optional<Tag> optionalTag = tagRepository.findByName(name);
-//            optionalTag.ifPresentOrElse(
-//                    result::add,
-//                    () -> {
-//                        Tag saved = tagRepository.save(tag);
-//                        result.add(saved);
-//                    }
-//            );
-//        }
-//    }

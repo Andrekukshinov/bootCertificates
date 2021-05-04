@@ -4,6 +4,7 @@ import com.epam.esm.persistence.exception.SortingException;
 import com.epam.esm.service.exception.EntityAlreadyExistsException;
 import com.epam.esm.service.exception.EntityNotFoundException;
 import com.epam.esm.service.exception.ValidationException;
+import com.epam.esm.web.exception.InvalidSizeException;
 import com.epam.esm.web.model.BindExceptionModel;
 import com.epam.esm.web.model.ExceptionModel;
 import org.apache.logging.log4j.LogManager;
@@ -85,6 +86,13 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = ValidationException.class)
     protected ResponseEntity<Object> handleConflict(ValidationException ex, WebRequest request) {
+        LOGGER.error(ex.getMessage(), ex);
+        ExceptionModel body = new ExceptionModel(ex.getMessage(), BAD_REQUEST);
+        return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler(value = InvalidSizeException.class)
+    protected ResponseEntity<Object> handleConflict(InvalidSizeException ex, WebRequest request) {
         LOGGER.error(ex.getMessage(), ex);
         ExceptionModel body = new ExceptionModel(ex.getMessage(), BAD_REQUEST);
         return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);

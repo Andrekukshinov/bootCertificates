@@ -125,7 +125,6 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
         return new PageImpl<>(content, pageable, lastPage);
     }
 
-    //todo add predicate
     private Integer getLastPage(CriteriaBuilder cb, Pageable pageable, Specification<GiftCertificate> specification) {
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<GiftCertificate> certificateRoot = countQuery.from(GiftCertificate.class);
