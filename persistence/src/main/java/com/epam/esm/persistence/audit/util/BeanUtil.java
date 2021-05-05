@@ -1,11 +1,11 @@
-package com.epam.esm.persistence.audit.service;
+package com.epam.esm.persistence.audit.util;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class BeanUtil implements ApplicationContextAware {
 
     private static ApplicationContext context;

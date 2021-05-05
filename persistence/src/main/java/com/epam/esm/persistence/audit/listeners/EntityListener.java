@@ -1,6 +1,6 @@
 package com.epam.esm.persistence.audit.listeners;
 
-import com.epam.esm.persistence.audit.service.BeanUtil;
+import com.epam.esm.persistence.audit.util.BeanUtil;
 import com.epam.esm.persistence.entity.History;
 import com.epam.esm.persistence.model.enums.Action;
 import org.springframework.transaction.annotation.Transactional;

@@ -66,7 +66,17 @@ public class TagServiceImpl implements TagService {
                 tag -> {
                     throw new DeleteTagInUseException(String.format(TAG_INVOLVED_MESSAGE, tagId));
                 },
-                () -> tagRepository.delete(tagId)
+                () -> {
+                    deleteTagFromRepository(tagId);
+                }
+        );
+    }
+
+    private void deleteTagFromRepository(Long tagId) {
+        Optional<Tag> tagOptional = tagRepository.findById(tagId);
+        tagOptional.ifPresentOrElse(
+                tag -> tagRepository.delete(tagId),
+                () -> {throw new EntityNotFoundException(String.format(WRONG_TAG, tagId));}
         );
     }
 

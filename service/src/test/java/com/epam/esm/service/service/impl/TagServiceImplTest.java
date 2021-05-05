@@ -96,9 +96,22 @@ class TagServiceImplTest {
 
     @Test
     void testDeleteTagShouldInvokeRepositoryIfNotInvokedWithCertificates() {
+        when(tagRepository.findById(any())).thenReturn(Optional.of(PEOPLE_TAG));
+
         service.deleteTag(CERTIFICATE_ID_DEFAULT_ID);
 
         verify(tagRepository, times(1)).delete(any());
+        verify(tagRepository, times(1)).findById(any());
+        verify(tagRepository, times(1)).findInCertificates(any());
+    }
+
+    @Test
+    void testDeleteTagShouldThrowExceptionWhenTagNotFound() {
+
+        assertThrows(EntityNotFoundException.class, () -> service.deleteTag(CERTIFICATE_ID_DEFAULT_ID));
+
+        verify(tagRepository, times(0)).delete(any());
+        verify(tagRepository, times(1)).findById(any());
         verify(tagRepository, times(1)).findInCertificates(any());
     }
 

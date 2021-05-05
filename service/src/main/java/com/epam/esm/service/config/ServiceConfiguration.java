@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @ComponentScan(basePackages = "com.epam.esm.service")
 @EnableTransactionManagement
-//@Profile("dev")
 public class ServiceConfiguration {
     @Bean
     public ModelMapper getDtoEntityMapper() {
