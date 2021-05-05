@@ -1,8 +1,8 @@
 package com.epam.esm.service.dto.certificate;
 
 import com.epam.esm.service.dto.TagDto;
-import com.epam.esm.service.valiation.SaveGroup;
-import com.epam.esm.service.valiation.UpdateGroup;
+import com.epam.esm.service.validation.SaveGroup;
+import com.epam.esm.service.validation.UpdateGroup;
 import org.springframework.hateoas.RepresentationModel;
 
 import javax.validation.constraints.DecimalMin;

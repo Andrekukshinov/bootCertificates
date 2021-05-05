@@ -37,13 +37,13 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public Page<Order> find(Specification<Order> orderSpecification, Pageable pageable) {
+    public Page<Order> find(Specification<Order> specification, Pageable pageable) {
         CriteriaBuilder cb = manager.getCriteriaBuilder();
         CriteriaQuery<Order> query = cb.createQuery(Order.class);
         Root<Order> orderFrom = query.from(Order.class);
-        Predicate restriction = orderSpecification.toPredicate(orderFrom, query, cb);
+        Predicate restriction = specification.toPredicate(orderFrom, query, cb);
         query.where(restriction);
-        Integer lastPage = getLastPage(cb, pageable, orderSpecification);
+        Integer lastPage = getLastPage(cb, pageable, specification);
         TypedQuery<Order> exec = getPagedQuery(pageable, cb, query, orderFrom);
         List<Order> resultList = exec.getResultList();
         return new PageImpl<>(resultList, pageable, lastPage);

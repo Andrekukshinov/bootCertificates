@@ -4,7 +4,7 @@ import com.epam.esm.persistence.model.page.Page;
 import com.epam.esm.persistence.model.page.Pageable;
 import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.service.TagService;
-import com.epam.esm.service.valiation.SaveGroup;
+import com.epam.esm.service.validation.SaveGroup;
 import com.epam.esm.web.helper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;

@@ -1,6 +1,6 @@
 package com.epam.esm.service.dto;
 
-import com.epam.esm.service.valiation.SaveGroup;
+import com.epam.esm.service.validation.SaveGroup;
 import org.springframework.hateoas.RepresentationModel;
 
 import javax.validation.constraints.NotBlank;

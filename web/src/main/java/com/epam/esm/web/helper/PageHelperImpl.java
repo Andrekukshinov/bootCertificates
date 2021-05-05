@@ -18,16 +18,16 @@ public class PageHelperImpl implements PageHelper {
         return result;
     }
 
-    public Map<String, String> getThisPageParamMap(Map<String, String> requestParams, Integer page) {
-        return getPageParamMap(requestParams, page + 1);
+    public Map<String, String> getThisPageParamMap(Map<String, String> requestParams, Integer currentPage) {
+        return getPageParamMap(requestParams, currentPage + 1);
     }
 
-    public Map<String, String> getNextPageParamMap(Map<String, String> requestParams, Integer page) {
-        return getThisPageParamMap(requestParams, page);
+    public Map<String, String> getNextPageParamMap(Map<String, String> requestParams, Integer nextPage) {
+        return getThisPageParamMap(requestParams, nextPage);
     }
 
-    public Map<String, String> getPreviousPageParamMap(Map<String, String> requestParams, Integer page) {
-        return getThisPageParamMap(requestParams, page);
+    public Map<String, String> getPreviousPageParamMap(Map<String, String> requestParams, Integer previousPage) {
+        return getThisPageParamMap(requestParams, previousPage);
     }
 
     public Pageable getPageable(Map<String, String> requestParams) {

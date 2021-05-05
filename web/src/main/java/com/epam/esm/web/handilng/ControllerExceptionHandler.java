@@ -145,5 +145,3 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 }
-//todo 29.04.2021 test verify, new unit tests
-//todo 29.04.2021 put much data to db + java docks

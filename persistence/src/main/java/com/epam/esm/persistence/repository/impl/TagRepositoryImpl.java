@@ -23,8 +23,6 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Repository
 @Transactional
@@ -81,16 +79,6 @@ public class TagRepositoryImpl implements TagRepository {
     }
 
     @Override
-    public Set<Tag> findTagsByNames(Set<String> tagNames) {
-        CriteriaBuilder cb = manager.getCriteriaBuilder();
-        CriteriaQuery<Tag> query = cb.createQuery(Tag.class);
-        Root<Tag> tag = query.from(Tag.class);
-        query.select(tag).where(tag.get("name").in(tagNames));
-        TypedQuery<Tag> typedQuery = manager.createQuery(query);
-        return typedQuery.getResultStream().collect(Collectors.toSet());
-    }
-
-    @Override
     public Page<Tag> find(Specification<Tag> specification, Pageable pageable) {
         CriteriaBuilder cb = manager.getCriteriaBuilder();
         CriteriaQuery<Tag> query = cb.createQuery(Tag.class);
@@ -101,12 +89,6 @@ public class TagRepositoryImpl implements TagRepository {
         TypedQuery<Tag> exec = getPagedQuery(pageable, cb, query, tagFrom);
         List<Tag> resultList = exec.getResultList();
         return new PageImpl<>(resultList, pageable, lastPage);
-    }
-
-    @Override
-    public Set<Tag> saveAll(Set<Tag> tagsToBeSaved) {
-        tagsToBeSaved.forEach(tag -> manager.persist(tag));
-        return tagsToBeSaved;
     }
 
     @Override

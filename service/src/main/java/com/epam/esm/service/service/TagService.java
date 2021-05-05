@@ -13,10 +13,9 @@ import java.util.Set;
  */
 public interface TagService {
     /**
-     * Method that performs validation for given dto object and saving of tag
+     * Method that saving of tag
      *
-     * @param tag dto to be validated and performed logics with
-     * @throws ValidationException in case of validation error occur
+     * @param tag dto to be performed logics with
      */
     TagDto save(TagDto tag);
 
@@ -43,7 +42,16 @@ public interface TagService {
      */
     Page<TagDto> getAll(Pageable pageable);
 
-    Set<Tag> saveAll(Set<Tag> tagToBeSaved) throws ValidationException;
+    /**
+     * Method that saving of tags
+     *
+     * @param tagsToBeSaved dtos to be performed logics with
+     */
+    Set<Tag> saveAll(Set<Tag> tagsToBeSaved) throws ValidationException;
 
+    /**
+     * Method for retrieving tag that was the most widely used by user with the highest cost of all orders
+     * @return tag
+     */
     TagDto getTopUserMostPopularTag();
 }

@@ -88,9 +88,9 @@ public class TagServiceImpl implements TagService {
 
     @Override
     @Transactional
-    public Set<Tag> saveAll(Set<Tag> tagToBeSaved) throws ValidationException {
+    public Set<Tag> saveAll(Set<Tag> tagsToBeSaved) throws ValidationException {
         Set<Tag> result = new HashSet<>();
-        for (Tag tag : tagToBeSaved) {
+        for (Tag tag : tagsToBeSaved) {
             validator.validate(tag);
             addSavedTag(result, tag);
         }
