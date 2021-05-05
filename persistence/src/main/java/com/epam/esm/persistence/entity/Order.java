@@ -135,7 +135,7 @@ public class Order {
         return new OrderBuilder();
     }
 
-    public static class OrderBuilder{
+    public static class OrderBuilder {
         private Long id;
         private LocalDateTime createDate;
         private OrderStatus status;

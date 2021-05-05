@@ -51,6 +51,7 @@ public interface TagService {
 
     /**
      * Method for retrieving tag that was the most widely used by user with the highest cost of all orders
+     *
      * @return tag
      */
     TagDto getTopUserMostPopularTag();

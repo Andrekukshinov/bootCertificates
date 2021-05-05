@@ -14,6 +14,7 @@ public interface TagRepository extends DeleteRepository<Tag>, CreateRepository<T
 
     /**
      * Method for searching for presence of tag in certificates
+     *
      * @param id to look for tag with
      * @return optional of tag
      */
@@ -21,6 +22,7 @@ public interface TagRepository extends DeleteRepository<Tag>, CreateRepository<T
 
     /**
      * Method for retrieving tag that was the most widely used by user with the highest cost of all orders
+     *
      * @return tag
      */
     Tag getTopUserMostPopularTag();
@@ -29,7 +31,7 @@ public interface TagRepository extends DeleteRepository<Tag>, CreateRepository<T
      * Method for returning page with tags based on received specifications from data source
      *
      * @param specification to search and sort orders with
-     * @param pageable description of page retrieved
+     * @param pageable      description of page retrieved
      * @return page with found orders
      */
     Page<Tag> find(Specification<Tag> specification, Pageable pageable);

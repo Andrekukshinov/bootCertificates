@@ -14,7 +14,7 @@ public interface OrderRepository extends ReadOperationRepository<Order>, CreateR
      * Method for returning page with orders based on received specifications from data source
      *
      * @param specification to search and sort orders with
-     * @param pageable description of page retrieved
+     * @param pageable      description of page retrieved
      * @return page with found orders
      */
     Page<Order> find(Specification<Order> specification, Pageable pageable);

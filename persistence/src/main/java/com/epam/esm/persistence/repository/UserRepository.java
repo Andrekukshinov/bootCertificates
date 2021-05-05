@@ -11,6 +11,7 @@ public interface UserRepository extends ReadOperationRepository<User> {
 
     /**
      * Method for returning page with users from data source
+     *
      * @param pageable description of page retrieved
      * @return page with found users
      */

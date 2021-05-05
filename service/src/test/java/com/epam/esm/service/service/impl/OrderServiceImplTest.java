@@ -47,14 +47,14 @@ class OrderServiceImplTest {
             .setName("name")
             .setPrice(new BigDecimal(150))
             .setStatus(GiftCertificateStatus.ACTIVE)
-            .setTags(Set.of( new Tag(1L, "tName")))
+            .setTags(Set.of(new Tag(1L, "tName")))
             .build();
 
     private static final GiftCertificatesNoTagDto CERTIFICATE_ID_ONLY = GiftCertificatesNoTagDto
             .getBuilder()
             .setId(1L)
             .build();
-    private static final OrderCertificateUnitDto CERTIFICATE_AMOUNT_DTO = new OrderCertificateUnitDto(null, CERTIFICATE_ID_ONLY,2);
+    private static final OrderCertificateUnitDto CERTIFICATE_AMOUNT_DTO = new OrderCertificateUnitDto(null, CERTIFICATE_ID_ONLY, 2);
 
     private static final OrderCertificatesDto ORDER_DTO =
             OrderCertificatesDto.builder()
@@ -120,29 +120,29 @@ class OrderServiceImplTest {
         assertThat(actual, is(ORDER_DTO));
     }
 
-     @Test
-     void testGetUserOrderByIdShouldReturnUserOrderWhenFound () {
+    @Test
+    void testGetUserOrderByIdShouldReturnUserOrderWhenFound() {
         Page<Order> page = new PageImpl<>(List.of(ORDER), Pageable.unpaged(), 1);
         when(repository.find(any(), any())).thenReturn(page);
         when(modelMapper.map(ORDER, OrderCertificatesDto.class)).thenReturn(ORDER_DTO);
 
-         OrderCertificatesDto actual = orderService.getUserOrderById(1L, 1L);
+        OrderCertificatesDto actual = orderService.getUserOrderById(1L, 1L);
 
-         assertThat(actual, is(ORDER_DTO));
-     }
+        assertThat(actual, is(ORDER_DTO));
+    }
 
-     @Test
-     void testGetUserOrderByIdShouldThrowEntityNotFoundExceptionWhenNotFound () {
-        Page<Order> page = new PageImpl<>(new ArrayList<>() , Pageable.unpaged(), 1);
+    @Test
+    void testGetUserOrderByIdShouldThrowEntityNotFoundExceptionWhenNotFound() {
+        Page<Order> page = new PageImpl<>(new ArrayList<>(), Pageable.unpaged(), 1);
         when(repository.find(any(), any())).thenReturn(page);
         when(modelMapper.map(ORDER, OrderCertificatesDto.class)).thenReturn(ORDER_DTO);
 
         assertThrows(EntityNotFoundException.class, () -> orderService.getUserOrderById(1L, 1L));
 
-     }
+    }
 
     @Test
-    void testGetAllUserOrderByIdShouldReturnUserOrdersWhenFound () {
+    void testGetAllUserOrderByIdShouldReturnUserOrdersWhenFound() {
 
         OrderDetailsDto detailsDto = new OrderDetailsDto(1L, CREATE_DATE, new BigDecimal(500));
         Page<Order> page = new PageImpl<>(List.of(ORDER, ORDER), Pageable.unpaged(), 1);

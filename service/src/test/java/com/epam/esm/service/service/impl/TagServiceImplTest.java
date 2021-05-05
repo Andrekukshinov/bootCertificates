@@ -187,16 +187,16 @@ class TagServiceImplTest {
         verify(tagRepository, times(1)).findById(any());
     }
 
-     @Test
-     void testGetTopUserMostPopularTagShouldReturnTag () {
+    @Test
+    void testGetTopUserMostPopularTagShouldReturnTag() {
         when(tagRepository.getTopUserMostPopularTag()).thenReturn(PEOPLE_TAG);
         when(modelMapper.map(any(), any())).thenReturn(PEOPLE_TAG_DTO);
 
-         TagDto actual = service.getTopUserMostPopularTag();
+        TagDto actual = service.getTopUserMostPopularTag();
 
-         assertThat(actual, is(PEOPLE_TAG_DTO));
-         verify(tagRepository, times(1)).getTopUserMostPopularTag();
-         verify(modelMapper, times(1)).map(any(), any());
+        assertThat(actual, is(PEOPLE_TAG_DTO));
+        verify(tagRepository, times(1)).getTopUserMostPopularTag();
+        verify(modelMapper, times(1)).map(any(), any());
 
-     }
+    }
 }

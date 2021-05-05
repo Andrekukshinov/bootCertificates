@@ -19,7 +19,8 @@ public interface OrderService {
 
     /**
      * Method for retrieving user order
-     * @param userId to look for user to find order from
+     *
+     * @param userId  to look for user to find order from
      * @param orderId to find order from found user
      * @return dto entity if such user order exists order
      */
@@ -27,7 +28,8 @@ public interface OrderService {
 
     /**
      * Method for retrieving all user order
-     * @param userId to look for user to find order from
+     *
+     * @param userId   to look for user to find order from
      * @param pageable to build page with orders
      * @return page with dto entities
      */

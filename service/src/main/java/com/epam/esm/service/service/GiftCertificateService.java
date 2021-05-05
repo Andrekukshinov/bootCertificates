@@ -50,7 +50,7 @@ public interface GiftCertificateService {
      * Method that returns list of GiftCertificateTag dto entities based on
      * received specification dto object
      *
-     * @param params to build search specification with
+     * @param params   to build search specification with
      * @param pageable to build page of certificates with
      * @return page with GiftCertificateTag dto entity
      * @throws com.epam.esm.service.exception.EntityNotFoundException if entity with id not exists
@@ -59,11 +59,11 @@ public interface GiftCertificateService {
 
     /**
      * Internal usage only!
-     *
+     * <p>
      * Method that returns list of GiftCertificate entities based on
      * received specification dto object
      *
-     * @param params to build search specification with
+     * @param params   to build search specification with
      * @param pageable to build page of certificates with
      * @return page with GiftCertificate entity
      * @throws com.epam.esm.service.exception.EntityNotFoundException if entity with id not exists
@@ -73,8 +73,8 @@ public interface GiftCertificateService {
     /**
      * Method that performs partly update action (from 1 field to complete object)
      *
-     * @param toBeUpdated dto to be validated and performed logics with
-     * @param certificateId       certificate param to be updated by
+     * @param toBeUpdated   dto to be validated and performed logics with
+     * @param certificateId certificate param to be updated by
      * @throws ValidationException in case of validation error occur
      */
     GiftCertificateTagDto patchUpdate(Long certificateId, GiftCertificateTagDto toBeUpdated) throws ValidationException;

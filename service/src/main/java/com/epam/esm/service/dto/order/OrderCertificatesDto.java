@@ -151,7 +151,7 @@ public class OrderCertificatesDto extends RepresentationModel<OrderCertificatesD
         }
 
         public OrderCertificatesDto build() {
-            return new OrderCertificatesDto(id, createDate, totalPrice, userId ,orderCertificates);
+            return new OrderCertificatesDto(id, createDate, totalPrice, userId, orderCertificates);
         }
     }
 }

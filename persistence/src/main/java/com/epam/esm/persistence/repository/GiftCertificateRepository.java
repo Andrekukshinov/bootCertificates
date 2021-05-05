@@ -21,7 +21,7 @@ public interface GiftCertificateRepository extends DeleteRepository<GiftCertific
      * Method for returning page with certificates based on received specifications from data source
      *
      * @param specification to search and sort certificates with
-     * @param pageable description of page retrieved
+     * @param pageable      description of page retrieved
      * @return page with found certificates
      */
     Page<GiftCertificate> findBySpecification(Specification<GiftCertificate> specification, Pageable pageable);
@@ -30,7 +30,7 @@ public interface GiftCertificateRepository extends DeleteRepository<GiftCertific
      * Method for updating certificate entity (from 1 field to complete entity) in the data source
      *
      * @param certificateId id to update entity from db
-     * @param toBeUpdated object to be updated
+     * @param toBeUpdated   object to be updated
      * @return updated entity
      */
     GiftCertificate partialUpdate(Long certificateId, GiftCertificate toBeUpdated);

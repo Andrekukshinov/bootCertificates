@@ -98,7 +98,9 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         Optional<GiftCertificate> optionalGiftCertificate = certificateRepository.findById(id);
         optionalGiftCertificate.ifPresentOrElse(
                 giftCertificate -> certificateRepository.delete(id),
-                () ->{throw new EntityNotFoundException("certificate with id " + id + " does not exist");}
+                () -> {
+                    throw new EntityNotFoundException("certificate with id " + id + " does not exist");
+                }
         );
     }
 
