@@ -1,4 +1,3 @@
-
 INSERT INTO gift_certificates(name, description, duration, create_date, last_update_date, price, status)
 VALUES ('spa', 'family certificate', 3, '2021-03-25', '2021-03-25', 754, 'DELETED'),
        ('gym', 'for boss of the gym', 14, '2021-03-25', '2021-03-25', 300, 'ACTIVE'),

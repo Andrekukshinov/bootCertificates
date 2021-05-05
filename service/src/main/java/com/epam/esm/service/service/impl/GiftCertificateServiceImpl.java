@@ -9,7 +9,7 @@ import com.epam.esm.persistence.model.page.Pageable;
 import com.epam.esm.persistence.model.specification.CertificateDescriptionSpecification;
 import com.epam.esm.persistence.model.specification.CertificateNameSpecification;
 import com.epam.esm.persistence.model.specification.CertificatesStatusSpecification;
-import com.epam.esm.persistence.model.specification.FindAllCertificatesSpecification;
+import com.epam.esm.persistence.model.specification.FindAllActiveCertificatesSpecification;
 import com.epam.esm.persistence.model.specification.FindByIdInSpecification;
 import com.epam.esm.persistence.model.specification.GiftCertificateTagNamesSpecification;
 import com.epam.esm.persistence.model.specification.Specification;
@@ -43,7 +43,6 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     private final ModelMapper modelMapper;
 
 
-
     @Autowired
     public GiftCertificateServiceImpl(GiftCertificateRepository certificateRepository, TagService tagService, ModelMapper modelMapper) {
         this.certificateRepository = certificateRepository;
@@ -64,18 +63,11 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public GiftCertificateTagDto getCertificateWithTagsById(Long id) {
+    public GiftCertificateTagDto getCertificateById(Long id) {
         Optional<GiftCertificate> certificateOptional = certificateRepository.findById(id);
         GiftCertificate certificate = certificateOptional
                 .orElseThrow(() -> new EntityNotFoundException(String.format(WRONG_CERTIFICATE, id)));
         return modelMapper.map(certificate, GiftCertificateTagDto.class);
-    }
-
-    @Override
-    @Transactional
-    public void deleteCertificate(Long id) {
-        Optional<GiftCertificate> optionalGiftCertificate = certificateRepository.findById(id);
-        optionalGiftCertificate.ifPresent(giftCertificate -> certificateRepository.delete(id));
     }
 
     @Override
@@ -97,6 +89,17 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
             Set<Tag> savedTags = tagService.saveAll(certificateTags);
             certificate.setTags(savedTags);
         }
+    }
+
+
+    @Override
+    @Transactional
+    public void deleteCertificate(Long id) {
+        Optional<GiftCertificate> optionalGiftCertificate = certificateRepository.findById(id);
+        optionalGiftCertificate.ifPresentOrElse(
+                giftCertificate -> certificateRepository.delete(id),
+                () ->{throw new EntityNotFoundException("certificate with id " + id + " does not exist");}
+        );
     }
 
     @Override
@@ -135,26 +138,28 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         String description = params.getCertificateDescription();
         String name = params.getCertificateName();
         Set<String> tagNames = params.getTagNames();
-        if(!Objects.isNull(tagNames)){
-            Specification<GiftCertificate> tagNamesSpecification = new GiftCertificateTagNamesSpecification(tagNames);
-            specifications.add(tagNamesSpecification);
+        if (!Objects.isNull(tagNames)) {
+            tagNames.forEach(tagName -> {
+                Specification<GiftCertificate> tagNamesSpecification = new GiftCertificateTagNamesSpecification(tagName);
+                specifications.add(tagNamesSpecification);
+            });
         }
-        if(!Objects.isNull(description)){
+        if (!Objects.isNull(description)) {
             Specification<GiftCertificate> descriptionSpecification = new CertificateDescriptionSpecification(description);
             specifications.add(descriptionSpecification);
         }
-        if(!Objects.isNull(name)){
+        if (!Objects.isNull(name)) {
             Specification<GiftCertificate> certificateNameSpecification = new CertificateNameSpecification(name);
             specifications.add(certificateNameSpecification);
         }
-        if(!Objects.isNull(ids)){
+        if (!Objects.isNull(ids)) {
             Specification<GiftCertificate> idSpecification = new FindByIdInSpecification<>(ids);
             specifications.add(idSpecification);
         }
         return specifications
                 .stream()
                 .reduce(Specification::and)
-                .orElse(new FindAllCertificatesSpecification());
+                .orElse(new FindAllActiveCertificatesSpecification());
     }
 
 }

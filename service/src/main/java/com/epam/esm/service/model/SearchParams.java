@@ -65,7 +65,7 @@ public class SearchParams {
         private String certificateDescription;
         private String certificateName;
 
-        private SearchParamsBuilder (){
+        private SearchParamsBuilder() {
         }
 
         public SearchParamsBuilder setTagNames(Set<String> tagNames) {

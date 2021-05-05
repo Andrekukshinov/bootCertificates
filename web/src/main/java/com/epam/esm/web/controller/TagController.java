@@ -77,35 +77,39 @@ public class TagController {
 
     private CollectionModel<TagDto> getTagsBuiltLinks(Map<String, String> requestParams, Page<TagDto> page) {
         CollectionModel<TagDto> of = CollectionModel.of(page.getContent());
-        of.add(linkTo(
-                methodOn(TagController.class)
-                        .getAll(pageHelper.getPageParamMap(requestParams, page.getFirstPage())))
-                .withRel("first")
-        );
+        if (page.hasFirst()) {
+            of.add(linkTo(
+                    methodOn(TagController.class)
+                            .getAll(pageHelper.getPageParamMap(requestParams, page.getFirstPage())))
+                    .withRel("first")
+            );
+        }
         if (page.hasPrevious()) {
             of.add(linkTo(
                     methodOn(TagController.class)
-                            .getAll(pageHelper.getPageParamMap(requestParams, page.getPreviousPage())))
-                    .withRel("this")
+                            .getAll(pageHelper.getPreviousPageParamMap(requestParams, page.getPreviousPage())))
+                    .withRel("previous")
             );
         }
         of.add(linkTo(
                 methodOn(TagController.class)
-                        .getAll(pageHelper.getPageParamMap(requestParams, page.getPage())))
+                        .getAll(pageHelper.getThisPageParamMap(requestParams, page.getPage())))
                 .withRel("this")
         );
         if (page.hasNext()) {
             of.add(linkTo(
                     methodOn(TagController.class)
-                            .getAll(pageHelper.getPageParamMap(requestParams, page.getNextPage())))
-                    .withRel("this")
+                            .getAll(pageHelper.getNextPageParamMap(requestParams, page.getNextPage())))
+                    .withRel("next")
             );
         }
-        of.add(linkTo(
-                methodOn(TagController.class)
-                        .getAll(pageHelper.getPageParamMap(requestParams, page.getLastPage())))
-                .withRel("last")
-        );
+        if (page.hasLast()) {
+            of.add(linkTo(
+                    methodOn(TagController.class)
+                            .getAll(pageHelper.getPageParamMap(requestParams, page.getLastPage())))
+                    .withRel("last")
+            );
+        }
         return of;
     }
 }

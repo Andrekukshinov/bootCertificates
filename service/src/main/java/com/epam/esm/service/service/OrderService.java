@@ -9,8 +9,6 @@ import com.epam.esm.service.dto.order.OrderDetailsDto;
 public interface OrderService {
     OrderCertificatesDto save(OrderCertificatesDto orderCertificatesDto);
 
-    OrderCertificatesDto getById(Long orderId);
-
     OrderCertificatesDto getUserOrderById(Long userId, Long orderId);
 
     Page<OrderDetailsDto> getAllUserOrders(Long userId, Pageable pageable);

@@ -52,7 +52,7 @@ public class GiftCertificateController {
 
     @GetMapping("/{id}")
     public ResponseEntity<GiftCertificateTagDto> getGiftCertificateById(@PathVariable(ID) Long id) {
-        GiftCertificateTagDto certificate = certificateService.getCertificateWithTagsById(id);
+        GiftCertificateTagDto certificate = certificateService.getCertificateById(id);
         certificate.add((linkTo(methodOn(GiftCertificateController.class).getGiftCertificateById(id)).withSelfRel()));
         addMappingToAll(certificate);
         return ResponseEntity.ok(certificate);
@@ -103,35 +103,39 @@ public class GiftCertificateController {
 
     private CollectionModel<GiftCertificateTagDto> getBuiltLinks(Map<String, String> requestParams, Set<String> tagNames, Page<GiftCertificateTagDto> page) {
         CollectionModel<GiftCertificateTagDto> of = CollectionModel.of(page.getContent());
-        of.add(linkTo(
-                methodOn(GiftCertificateController.class)
-                        .getByParam(pageHelper.getPageParamMap(requestParams, page.getFirstPage()), getTagNames(tagNames)))
-                .withRel("first")
-        );
+        if (page.hasFirst()) {
+            of.add(linkTo(
+                    methodOn(GiftCertificateController.class)
+                            .getByParam(pageHelper.getPageParamMap(requestParams, page.getFirstPage()), getTagNames(tagNames)))
+                    .withRel("first")
+            );
+        }
         if (page.hasPrevious()) {
             of.add(linkTo(
                     methodOn(GiftCertificateController.class)
-                            .getByParam(pageHelper.getPageParamMap(requestParams, page.getPreviousPage()), getTagNames(tagNames)))
+                            .getByParam(pageHelper.getPreviousPageParamMap(requestParams, page.getPreviousPage()), getTagNames(tagNames)))
                     .withRel("previous")
             );
         }
         of.add(linkTo(
                 methodOn(GiftCertificateController.class)
-                        .getByParam(pageHelper.getPageParamMap(requestParams, page.getPage()), getTagNames(tagNames)))
+                        .getByParam(pageHelper.getThisPageParamMap(requestParams, page.getPage()), getTagNames(tagNames)))
                 .withRel("this")
         );
         if (page.hasNext()) {
             of.add(linkTo(
                     methodOn(GiftCertificateController.class)
-                            .getByParam(pageHelper.getPageParamMap(requestParams, page.getNextPage()), getTagNames(tagNames)))
+                            .getByParam(pageHelper.getNextPageParamMap(requestParams, page.getNextPage()), getTagNames(tagNames)))
                     .withRel("next")
             );
         }
-        of.add(linkTo(
-                methodOn(GiftCertificateController.class)
-                        .getByParam(pageHelper.getPageParamMap(requestParams, page.getLastPage()), getTagNames(tagNames)))
-                .withRel("last")
-        );
+        if (page.hasLast()) {
+            of.add(linkTo(
+                    methodOn(GiftCertificateController.class)
+                            .getByParam(pageHelper.getPageParamMap(requestParams, page.getLastPage()), getTagNames(tagNames)))
+                    .withRel("last")
+            );
+        }
         return of;
     }
 

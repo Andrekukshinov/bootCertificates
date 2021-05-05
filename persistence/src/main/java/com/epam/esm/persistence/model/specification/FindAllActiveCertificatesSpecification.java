@@ -8,7 +8,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-public class FindAllCertificatesSpecification implements Specification<GiftCertificate> {
+public class FindAllActiveCertificatesSpecification implements Specification<GiftCertificate> {
     @Override
     public Predicate toPredicate(Root<GiftCertificate> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
         return cb.and(

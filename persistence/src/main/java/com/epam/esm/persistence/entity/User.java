@@ -8,9 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.math.BigDecimal;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -26,12 +24,11 @@ public class User {
     public User() {
     }
 
-    public User(Long id, String password, String email, String nickname, BigDecimal bank, Set<Order> orders) {
+    public User(Long id, String password, String email, String nickname) {
         this.id = id;
         this.password = password;
         this.email = email;
         this.nickname = nickname;
-//        this.orders = orders;
     }
 
     public Long getId() {

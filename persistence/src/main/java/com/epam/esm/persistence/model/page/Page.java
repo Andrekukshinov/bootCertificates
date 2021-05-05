@@ -15,6 +15,10 @@ public interface Page<T> {
 
     boolean hasPrevious();
 
+    boolean hasFirst();
+
+    boolean hasLast();
+
     Integer getNextPage();
 
     Integer getPreviousPage();

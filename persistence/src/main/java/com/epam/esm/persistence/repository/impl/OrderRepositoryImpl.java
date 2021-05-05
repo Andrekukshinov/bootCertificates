@@ -56,17 +56,20 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     private Integer getLastPage(CriteriaBuilder cb, Pageable pageable, Specification<Order> specification) {
-        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-        Root<Order> certificateRoot = countQuery.from(Order.class);
-        countQuery.select(cb.count(certificateRoot));
-        Predicate restriction = specification.toPredicate(certificateRoot, countQuery, cb);
-        countQuery.where(restriction);
-        Long totalAmount = manager.createQuery(countQuery).getSingleResult();
-        Integer pageSize = pageable.getSize();
-        int amount = (int) (totalAmount / pageSize);
-        return totalAmount % pageSize == 0 ? amount : amount + 1;
+        if (!pageable.isPaged()) {
+            return 1;
+        } else {
+            CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+            Root<Order> certificateRoot = countQuery.from(Order.class);
+            countQuery.select(cb.count(certificateRoot));
+            Predicate restriction = specification.toPredicate(certificateRoot, countQuery, cb);
+            countQuery.where(restriction);
+            Long totalAmount = manager.createQuery(countQuery).getSingleResult();
+            Integer pageSize = pageable.getSize();
+            int amount = (int) (totalAmount / pageSize);
+            return totalAmount % pageSize == 0 ? amount : amount + 1;
+        }
     }
-
 
 
     private TypedQuery<Order> getPagedQuery(Pageable pageable, CriteriaBuilder cb, CriteriaQuery<Order> query, Root<Order> from) {
@@ -75,7 +78,7 @@ public class OrderRepositoryImpl implements OrderRepository {
             int pageSize = pageable.getSize();
             setSort(pageable, cb, query, from);
             TypedQuery<Order> exec = manager.createQuery(query);
-            exec.setFirstResult(pageNumber);
+            exec.setFirstResult(pageNumber * pageSize);
             exec.setMaxResults(pageSize);
             return exec;
         }
@@ -95,6 +98,7 @@ public class OrderRepositoryImpl implements OrderRepository {
             }
         }
     }
+
     private Path<Order> getSortParam(Root<Order> from, String sort) {
         try {
             return from.get(sort);

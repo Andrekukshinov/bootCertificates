@@ -4,7 +4,7 @@ import org.springframework.hateoas.RepresentationModel;
 
 import java.util.Objects;
 
-public class UserInfoDto extends RepresentationModel<UserOrderDto> {
+public class UserInfoDto extends RepresentationModel<UserInfoDto> {
     private Long id;
     private String password;
     private String email;

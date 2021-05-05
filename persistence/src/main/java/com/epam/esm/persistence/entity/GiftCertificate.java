@@ -53,7 +53,10 @@ public class GiftCertificate {
     public GiftCertificate() {
     }
 
-    public GiftCertificate(Long id, LocalDateTime createDate, LocalDateTime lastUpdateDate, String name, String description, BigDecimal price, GiftCertificateStatus status, Integer duration, Set<Tag> tags) {
+    public GiftCertificate(
+            Long id, LocalDateTime createDate, LocalDateTime lastUpdateDate,
+            String name, String description, BigDecimal price, GiftCertificateStatus status,
+            Integer duration, Set<Tag> tags) {
         this.id = id;
         this.createDate = createDate;
         this.lastUpdateDate = lastUpdateDate;

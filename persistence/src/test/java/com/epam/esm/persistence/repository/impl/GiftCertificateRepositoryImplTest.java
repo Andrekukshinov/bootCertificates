@@ -4,17 +4,15 @@ import com.epam.esm.persistence.config.TestConfiguration;
 import com.epam.esm.persistence.entity.GiftCertificate;
 import com.epam.esm.persistence.entity.Tag;
 import com.epam.esm.persistence.entity.enums.GiftCertificateStatus;
-import com.epam.esm.persistence.model.specification.FindAllCertificatesSpecification;
+import com.epam.esm.persistence.model.page.Page;
+import com.epam.esm.persistence.model.page.PageImpl;
+import com.epam.esm.persistence.model.page.Pageable;
+import com.epam.esm.persistence.model.specification.FindAllActiveCertificatesSpecification;
 import com.epam.esm.persistence.model.specification.FindByIdInSpecification;
 import com.epam.esm.persistence.repository.GiftCertificateRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,9 +29,7 @@ import static org.hamcrest.Matchers.is;
 @SpringBootTest(classes = {TestConfiguration.class})
 @ActiveProfiles("test")
 @Transactional
-class JdbcGiftCertificateRepositoryImplTest {
-    private static final Long EXPECTED_SAVED_ID = 5L;
-    private static final int EXPECTED_AMOUNT = 1;
+class GiftCertificateRepositoryImplTest {
     private static final LocalDateTime DATE = LocalDateTime.parse("2021-03-25T00:00:00");
     private static final String SPA = "spa";
     private static final String FAMILY_CERTIFICATE = "family certificate";
@@ -49,7 +45,7 @@ class JdbcGiftCertificateRepositoryImplTest {
 
     private static final Set<Tag> FIFTH_FOURTH_TAG = Set.of(FIFTH_TAG, FOURTH_TAG);
 
-    private static final Set<Tag> FOURTH_FIFTH_TAG  = Set.of(FOURTH_TAG, FIFTH_TAG);
+    private static final Set<Tag> FOURTH_FIFTH_TAG = Set.of(FOURTH_TAG, FIFTH_TAG);
 
     private static final GiftCertificate FOR_SAVING = GiftCertificate.getBuilder()
             .setCreateDate(DATE)
@@ -168,13 +164,13 @@ class JdbcGiftCertificateRepositoryImplTest {
             .setTags(FOURTH_FIFTH_TAG)
             .build();
 
-    private static final Pageable FIRST_THREE_CERTIFICATES_PAGEABLE = PageRequest.of(0, 3, Sort.by(Sort.Direction.ASC, "id"));
+    private static final Pageable FIRST_THREE_CERTIFICATES_PAGEABLE = new Pageable(0, 3, "id", "ASC");
     private static final List<GiftCertificate> FIRST_THREE = List.of(FIRST, SECOND, THIRD);
-    private static final Page<GiftCertificate> EXPECTED_PAGE_3_VALUES = new PageImpl<>(FIRST_THREE, FIRST_THREE_CERTIFICATES_PAGEABLE, 8L);
+    private static final Page<GiftCertificate> EXPECTED_PAGE_3_VALUES = new PageImpl<GiftCertificate>(FIRST_THREE, FIRST_THREE_CERTIFICATES_PAGEABLE, 8);
 
-    private static final Pageable ALL_CERTIFICATES_PAGEABLE = PageRequest.of(0, 7, Sort.by(Sort.Direction.ASC, "id"));
+    private static final Pageable ALL_CERTIFICATES_PAGEABLE = new Pageable(0, 7, "id", "ASC");
     private static final List<GiftCertificate> ALL_ACTIVE = List.of(FIRST, SECOND, THIRD, FOURTH, SIXTH, SEVENTH, EIGHTH);
-    private static final Page<GiftCertificate> EXPECTED_PAGE_ALL_ACTIVE = new PageImpl<>(ALL_ACTIVE, ALL_CERTIFICATES_PAGEABLE, 8L);
+    private static final Page<GiftCertificate> EXPECTED_PAGE_ALL_ACTIVE = new PageImpl<GiftCertificate>(ALL_ACTIVE, ALL_CERTIFICATES_PAGEABLE, 8);
 
     @Autowired
     private GiftCertificateRepository repository;
@@ -216,7 +212,7 @@ class JdbcGiftCertificateRepositoryImplTest {
     @Test
     @Rollback
     void testFindBySpecificationShouldReturnListOfAllCertificates() {
-        Page<GiftCertificate> page = repository.findBySpecification(new FindAllCertificatesSpecification(), ALL_CERTIFICATES_PAGEABLE);
+        Page<GiftCertificate> page = repository.findBySpecification(new FindAllActiveCertificatesSpecification(), ALL_CERTIFICATES_PAGEABLE);
 
         assertThat(page.getContent(), is(EXPECTED_PAGE_ALL_ACTIVE.getContent()));
     }

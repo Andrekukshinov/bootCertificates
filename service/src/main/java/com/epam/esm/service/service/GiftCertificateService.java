@@ -27,7 +27,7 @@ public interface GiftCertificateService {
      * @return GiftCertificateTag dto entity with specified id
      * @throws com.epam.esm.service.exception.EntityNotFoundException if entity with id not exists
      */
-    GiftCertificateTagDto getCertificateWithTagsById(Long id);
+    GiftCertificateTagDto getCertificateById(Long id);
 
     /**
      * Method that deletes certificate

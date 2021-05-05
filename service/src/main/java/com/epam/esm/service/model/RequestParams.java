@@ -65,7 +65,7 @@ public class RequestParams {
         private String certificateDescription;
         private String certificateName;
 
-        private RequestParamsBuilder (){
+        private RequestParamsBuilder() {
         }
 
         public RequestParamsBuilder setTagNames(Set<String> tagNames) {

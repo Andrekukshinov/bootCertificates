@@ -131,14 +131,6 @@ public class OrderServiceImpl implements OrderService {
                 .setIds(ids)
                 .build();
         return certificateService.getCertificatesBySpecification(requestParams, Pageable.unpaged()).getContent();
-
-    }
-
-    @Override
-    public OrderCertificatesDto getById(Long userId) {
-        Optional<Order> orderOptional = repository.findById(userId);
-        Order order = orderOptional.orElseThrow(() -> new EntityNotFoundException(String.format(NOT_FOUND, userId)));
-        return mapper.map(order, OrderCertificatesDto.class);
     }
 
     @Override

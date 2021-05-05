@@ -6,7 +6,6 @@ import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.dto.order.OrderCertificatesDto;
 import com.epam.esm.service.dto.order.OrderDetailsDto;
 import com.epam.esm.service.dto.user.UserInfoDto;
-import com.epam.esm.service.dto.user.UserOrderDto;
 import com.epam.esm.service.exception.ValidationException;
 import com.epam.esm.service.service.OrderService;
 import com.epam.esm.service.service.TagService;
@@ -49,8 +48,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserOrderDto> findById(@PathVariable Long id) {
-        UserOrderDto user = service.getById(id);
+    public ResponseEntity<UserInfoDto> findById(@PathVariable Long id) {
+        UserInfoDto user = service.getById(id);
         user.add(linkTo(methodOn(UserController.class).findById(id)).withSelfRel());
         user.add(linkTo(methodOn(UserController.class).getAllUsers(new HashMap<>())).withRel("all_users"));
         user.add(linkTo(methodOn(UserController.class).getUserAllOrders(user.getId(), new HashMap<>())).withRel("all_orders"));
@@ -67,35 +66,39 @@ public class UserController {
 
     private CollectionModel<UserInfoDto> getUsersBuiltLinks(Map<String, String> requestParams, Page<UserInfoDto> page) {
         CollectionModel<UserInfoDto> of = CollectionModel.of(page.getContent());
-        of.add(linkTo(
-                methodOn(UserController.class)
-                        .getAllUsers(pageHelper.getPageParamMap(requestParams, page.getFirstPage())))
-                .withRel("first")
-        );
+        if (page.hasFirst()) {
+            of.add(linkTo(
+                    methodOn(UserController.class)
+                            .getAllUsers(pageHelper.getPageParamMap(requestParams, page.getFirstPage())))
+                    .withRel("first")
+            );
+        }
         if (page.hasPrevious()) {
             of.add(linkTo(
                     methodOn(UserController.class)
-                            .getAllUsers(pageHelper.getPageParamMap(requestParams, page.getPreviousPage())))
+                            .getAllUsers(pageHelper.getPreviousPageParamMap(requestParams, page.getPreviousPage())))
                     .withRel("previous")
             );
         }
         of.add(linkTo(
                 methodOn(UserController.class)
-                        .getAllUsers(pageHelper.getPageParamMap(requestParams, page.getPage())))
+                        .getAllUsers(pageHelper.getThisPageParamMap(requestParams, page.getPage())))
                 .withRel("this")
         );
         if (page.hasNext()) {
             of.add(linkTo(
                     methodOn(UserController.class)
-                            .getAllUsers(pageHelper.getPageParamMap(requestParams, page.getNextPage())))
+                            .getAllUsers(pageHelper.getNextPageParamMap(requestParams, page.getNextPage())))
                     .withRel("next")
             );
         }
-        of.add(linkTo(
-                methodOn(UserController.class)
-                        .getAllUsers(pageHelper.getPageParamMap(requestParams, page.getLastPage())))
-                .withRel("last")
-        );
+        if (page.hasLast()) {
+            of.add(linkTo(
+                    methodOn(UserController.class)
+                            .getAllUsers(pageHelper.getPageParamMap(requestParams, page.getLastPage())))
+                    .withRel("last")
+            );
+        }
         return of;
     }
 
@@ -128,35 +131,39 @@ public class UserController {
 
     private CollectionModel<OrderDetailsDto> getOrdersBuiltLinks(Long userId, Map<String, String> requestParams, Page<OrderDetailsDto> page) {
         CollectionModel<OrderDetailsDto> of = CollectionModel.of(page.getContent());
-        of.add(linkTo(
-                methodOn(UserController.class)
-                        .getUserAllOrders(userId, pageHelper.getPageParamMap(requestParams, page.getFirstPage())))
-                .withRel("first")
-        );
+        if (page.hasFirst()) {
+            of.add(linkTo(
+                    methodOn(UserController.class)
+                            .getUserAllOrders(userId, pageHelper.getPageParamMap(requestParams, page.getFirstPage())))
+                    .withRel("first")
+            );
+        }
         if (page.hasPrevious()) {
             of.add(linkTo(
                     methodOn(UserController.class)
-                            .getUserAllOrders(userId, pageHelper.getPageParamMap(requestParams, page.getPreviousPage())))
+                            .getUserAllOrders(userId, pageHelper.getPreviousPageParamMap(requestParams, page.getPreviousPage())))
                     .withRel("previous")
             );
         }
         of.add(linkTo(
                 methodOn(UserController.class)
-                        .getUserAllOrders(userId, pageHelper.getPageParamMap(requestParams, page.getPage())))
+                        .getUserAllOrders(userId, pageHelper.getThisPageParamMap(requestParams, page.getPage())))
                 .withRel("this")
         );
         if (page.hasNext()) {
             of.add(linkTo(
                     methodOn(UserController.class)
-                            .getUserAllOrders(userId, pageHelper.getPageParamMap(requestParams, page.getNextPage())))
+                            .getUserAllOrders(userId, pageHelper.getNextPageParamMap(requestParams, page.getNextPage())))
                     .withRel("next")
             );
         }
-        of.add(linkTo(
-                methodOn(UserController.class)
-                        .getUserAllOrders(userId, pageHelper.getPageParamMap(requestParams, page.getLastPage())))
-                .withRel("last")
-        );
+        if (page.hasLast()) {
+            of.add(linkTo(
+                    methodOn(UserController.class)
+                            .getUserAllOrders(userId, pageHelper.getPageParamMap(requestParams, page.getLastPage())))
+                    .withRel("last")
+            );
+        }
         return of;
     }
 

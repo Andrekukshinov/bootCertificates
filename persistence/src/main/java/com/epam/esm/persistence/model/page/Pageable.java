@@ -1,20 +1,22 @@
 package com.epam.esm.persistence.model.page;
 
-import java.io.Serializable;
+import java.util.Objects;
 
-public class Pageable implements Serializable {
+public class Pageable {
     private boolean isPaged = true;
     private Integer page;
     private Integer size;
     private String sort;
     private String sortDir;
 
-    public Pageable() {
+    private Pageable() {
         isPaged = false;
     }
 
     public static Pageable unpaged() {
-        return new Pageable();
+        Pageable pageable = new Pageable(0, 1, null, null);
+        pageable.isPaged = false;
+        return pageable;
     }
 
     public Pageable(Integer page, Integer size, String sort, String sortDir) {
@@ -62,5 +64,33 @@ public class Pageable implements Serializable {
 
     public void setSortDir(String sortDir) {
         this.sortDir = sortDir;
+    }
+
+    @Override
+    public String toString() {
+        return "Pageable{" +
+                "isPaged=" + isPaged +
+                ", page=" + page +
+                ", size=" + size +
+                ", sort='" + sort + '\'' +
+                ", sortDir='" + sortDir + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Pageable pageable = (Pageable) o;
+        return isPaged() == pageable.isPaged() && Objects.equals(getPage(), pageable.getPage()) && Objects.equals(getSize(), pageable.getSize()) && Objects.equals(getSort(), pageable.getSort()) && Objects.equals(getSortDir(), pageable.getSortDir());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(isPaged(), getPage(), getSize(), getSort(), getSortDir());
     }
 }

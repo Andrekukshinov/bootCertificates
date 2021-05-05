@@ -17,7 +17,6 @@ public class OrderCertificatesDto extends RepresentationModel<OrderCertificatesD
     private Long id;
     private LocalDateTime createDate;
     private BigDecimal totalPrice;
-    private OrderStatus status;
     private Long userId;
     @Valid
     @NotEmpty(message = "certificate amount must be > 1!")
@@ -27,10 +26,9 @@ public class OrderCertificatesDto extends RepresentationModel<OrderCertificatesD
     public OrderCertificatesDto() {
     }
 
-    public OrderCertificatesDto(Long id, LocalDateTime createDate, OrderStatus status, BigDecimal totalPrice, Long userId, Set<OrderCertificateUnitDto> orderCertificates) {
+    public OrderCertificatesDto(Long id, LocalDateTime createDate, BigDecimal totalPrice, Long userId, Set<OrderCertificateUnitDto> orderCertificates) {
         this.id = id;
         this.createDate = createDate;
-        this.status = status;
         this.totalPrice = totalPrice;
         this.userId = userId;
         this.orderCertificates = orderCertificates;
@@ -50,14 +48,6 @@ public class OrderCertificatesDto extends RepresentationModel<OrderCertificatesD
 
     public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
-    }
-
-    public OrderStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(OrderStatus status) {
-        this.status = status;
     }
 
     public BigDecimal getTotalPrice() {
@@ -93,12 +83,12 @@ public class OrderCertificatesDto extends RepresentationModel<OrderCertificatesD
             return false;
         }
         OrderCertificatesDto orderCertificatesDto = (OrderCertificatesDto) o;
-        return Objects.equals(getId(), orderCertificatesDto.getId()) && Objects.equals(getCreateDate(), orderCertificatesDto.getCreateDate()) && getStatus() == orderCertificatesDto.getStatus() && Objects.equals(getTotalPrice(), orderCertificatesDto.getTotalPrice()) && Objects.equals(getUserId(), orderCertificatesDto.getUserId()) && Objects.equals(getOrderCertificates(), orderCertificatesDto.getOrderCertificates());
+        return Objects.equals(getId(), orderCertificatesDto.getId()) && Objects.equals(getCreateDate(), orderCertificatesDto.getCreateDate()) && Objects.equals(getTotalPrice(), orderCertificatesDto.getTotalPrice()) && Objects.equals(getUserId(), orderCertificatesDto.getUserId()) && Objects.equals(getOrderCertificates(), orderCertificatesDto.getOrderCertificates());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getCreateDate(), getStatus(), getTotalPrice(), getUserId(), getOrderCertificates());
+        return Objects.hash(getId(), getCreateDate(), getTotalPrice(), getUserId(), getOrderCertificates());
     }
 
     @Override
@@ -106,10 +96,62 @@ public class OrderCertificatesDto extends RepresentationModel<OrderCertificatesD
         return "OrderDto{" +
                 "id=" + id +
                 ", createDate=" + createDate +
-                ", status=" + status +
                 ", totalPrice=" + totalPrice +
                 ", userId=" + userId +
                 ", orderCertificates=" + orderCertificates +
                 '}';
+    }
+
+    public static OrderCertificatesDtoBuilder builder() {
+        return new OrderCertificatesDtoBuilder();
+    }
+
+    public static final class OrderCertificatesDtoBuilder {
+        private Long id;
+        private LocalDateTime createDate;
+        private BigDecimal totalPrice;
+        private OrderStatus status;
+        private Long userId;
+        private Set<OrderCertificateUnitDto> orderCertificates;
+
+        public OrderCertificatesDtoBuilder() {
+        }
+
+        private OrderCertificatesDtoBuilder(Long id, LocalDateTime createDate, BigDecimal totalPrice, OrderStatus status, Long userId, Set<OrderCertificateUnitDto> orderCertificates) {
+            this.id = id;
+            this.createDate = createDate;
+            this.totalPrice = totalPrice;
+            this.userId = userId;
+            this.orderCertificates = orderCertificates;
+        }
+
+        public OrderCertificatesDtoBuilder setId(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public OrderCertificatesDtoBuilder setCreateDate(LocalDateTime createDate) {
+            this.createDate = createDate;
+            return this;
+        }
+
+        public OrderCertificatesDtoBuilder setTotalPrice(BigDecimal totalPrice) {
+            this.totalPrice = totalPrice;
+            return this;
+        }
+
+        public OrderCertificatesDtoBuilder setUserId(Long userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        public OrderCertificatesDtoBuilder setOrderCertificates(Set<OrderCertificateUnitDto> orderCertificates) {
+            this.orderCertificates = orderCertificates;
+            return this;
+        }
+
+        public OrderCertificatesDto build() {
+            return new OrderCertificatesDto(id, createDate, totalPrice, userId ,orderCertificates);
+        }
     }
 }

@@ -29,6 +29,7 @@ public class TestConfiguration {
                 .addScript("classpath:sql/data.sql")
                 .build();
     }
+
     @Bean
     public EntityManager entityManager(LocalSessionFactoryBean sessionFactoryBean) {
         return Objects.requireNonNull(sessionFactoryBean.getObject()).createEntityManager();
@@ -51,7 +52,7 @@ public class TestConfiguration {
     }
 
     @Bean
-    public PlatformTransactionManager transactionManager(EntityManagerFactory emf){
+    public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(emf);
         return transactionManager;

@@ -21,6 +21,7 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
@@ -120,21 +121,26 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
         Predicate restriction = specification.toPredicate(giftCertificateFrom, query, cb);
         query.where(restriction);
         TypedQuery<GiftCertificate> exec = getPagedQuery(pageable, cb, query, giftCertificateFrom);
-        Integer lastPage = getLastPage(cb, pageable,specification);
         List<GiftCertificate> content = exec.getResultList();
+        Integer lastPage = getLastPage(cb, pageable, specification);
         return new PageImpl<>(content, pageable, lastPage);
     }
 
     private Integer getLastPage(CriteriaBuilder cb, Pageable pageable, Specification<GiftCertificate> specification) {
-        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-        Root<GiftCertificate> certificateRoot = countQuery.from(GiftCertificate.class);
-        countQuery.select(cb.count(certificateRoot));
-        Predicate restriction = specification.toPredicate(certificateRoot, countQuery, cb);
-        countQuery.where(restriction);
-        Long totalAmount = manager.createQuery(countQuery).getSingleResult();
-        Integer pageSize = pageable.getSize();
-        int amount = (int) (totalAmount / pageSize);
-        return totalAmount % pageSize == 0 ? amount : amount + 1;
+        if (!pageable.isPaged()) {
+            return 1;
+        } else {
+            CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+            Root<GiftCertificate> certificateRoot = countQuery.from(GiftCertificate.class);
+            Predicate restriction = specification.toPredicate(certificateRoot, countQuery, cb);
+            Expression<Long> count = cb.count(certificateRoot);
+            countQuery = countQuery.select(count);
+            countQuery = countQuery.where(restriction);
+            Long totalAmount = manager.createQuery(countQuery).getSingleResult();
+            Integer pageSize = pageable.getSize();
+            int amount = (int) (totalAmount / pageSize);
+            return totalAmount % pageSize == 0 ? amount : amount + 1;
+        }
     }
 
 
@@ -144,7 +150,7 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
             int pageSize = pageable.getSize();
             setSort(pageable, cb, query, from);
             TypedQuery<GiftCertificate> exec = manager.createQuery(query);
-            exec.setFirstResult(pageNumber);
+            exec.setFirstResult(pageNumber * pageSize);
             exec.setMaxResults(pageSize);
             return exec;
         }

@@ -130,4 +130,64 @@ public class Order {
     public int hashCode() {
         return Objects.hash(getId(), getCreateDate(), getStatus(), getTotalPrice(), getUser(), getOrderCertificates());
     }
+
+    public static OrderBuilder builder() {
+        return new OrderBuilder();
+    }
+
+    public static class OrderBuilder{
+        private Long id;
+        private LocalDateTime createDate;
+        private OrderStatus status;
+        private BigDecimal totalPrice;
+        private User user;
+        private List<OrderCertificate> orderCertificates;
+
+        public OrderBuilder() {
+        }
+
+        private OrderBuilder(Long id, LocalDateTime createDate, OrderStatus status, BigDecimal totalPrice, User user, List<OrderCertificate> orderCertificates) {
+            this.id = id;
+            this.createDate = createDate;
+            this.status = status;
+            this.totalPrice = totalPrice;
+            this.user = user;
+            this.orderCertificates = orderCertificates;
+        }
+
+        public OrderBuilder setId(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public OrderBuilder setCreateDate(LocalDateTime createDate) {
+            this.createDate = createDate;
+            return this;
+        }
+
+        public OrderBuilder setStatus(OrderStatus status) {
+            this.status = status;
+            return this;
+        }
+
+        public OrderBuilder setTotalPrice(BigDecimal totalPrice) {
+            this.totalPrice = totalPrice;
+            return this;
+        }
+
+        public OrderBuilder setUser(User user) {
+            this.user = user;
+            return this;
+        }
+
+        public OrderBuilder setOrderCertificates(List<OrderCertificate> orderCertificates) {
+            this.orderCertificates = orderCertificates;
+            return this;
+        }
+
+        public Order build() {
+            return new Order(id, createDate, status, totalPrice, user, orderCertificates);
+        }
+    }
+
 }

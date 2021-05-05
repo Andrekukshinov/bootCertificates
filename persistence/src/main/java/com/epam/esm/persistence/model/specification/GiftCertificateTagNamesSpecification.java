@@ -9,21 +9,18 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.Set;
 
 public class GiftCertificateTagNamesSpecification implements Specification<GiftCertificate> {
 
-    private final Set<String> tagNames;
+    private final String tagName;
 
-    public GiftCertificateTagNamesSpecification(@NonNull Set<String> tagNames) {
-        this.tagNames = tagNames;
+    public GiftCertificateTagNamesSpecification(@NonNull String tagName) {
+        this.tagName = tagName;
     }
 
     @Override
     public Predicate toPredicate(Root<GiftCertificate> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-        query.having(criteriaBuilder.equal(criteriaBuilder.count(root), tagNames.size()));
-        query.groupBy(root);
         Join<GiftCertificate, Tag> joinedTags = root.join("tags");
-        return joinedTags.get("name").in(tagNames);
+        return criteriaBuilder.equal(joinedTags.get("name"), tagName);
     }
 }

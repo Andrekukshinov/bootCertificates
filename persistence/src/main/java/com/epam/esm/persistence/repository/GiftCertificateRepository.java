@@ -22,10 +22,10 @@ public interface GiftCertificateRepository extends CreateDeleteRepository<GiftCe
     /**
      * Method for returning list of certificates based on received specifications from data source
      *
-     * @param mySpecification to search and sort certificates with
+     * @param specification to search and sort certificates with
      * @return list of found certificates
      */
-    Page<GiftCertificate> findBySpecification(Specification<GiftCertificate> mySpecification, Pageable pageable);
+    Page<GiftCertificate> findBySpecification(Specification<GiftCertificate> specification, Pageable pageable);
 
     GiftCertificate partialUpdate(Long certificateId, GiftCertificate toBeUpdated);
 }

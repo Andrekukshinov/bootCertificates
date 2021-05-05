@@ -1,6 +1,6 @@
 package com.epam.esm.service.exception;
 
-public class DeleteTagInUseException extends RuntimeException{
+public class DeleteTagInUseException extends RuntimeException {
     public DeleteTagInUseException() {
     }
 

@@ -7,5 +7,11 @@ import java.util.Map;
 public interface PageHelper {
     Map<String, String> getPageParamMap(Map<String, String> requestParams, Integer page);
 
+    Map<String, String> getThisPageParamMap(Map<String, String> requestParams, Integer page);
+
+    Map<String, String> getNextPageParamMap(Map<String, String> requestParams, Integer page);
+
+    Map<String, String> getPreviousPageParamMap(Map<String, String> requestParams, Integer page);
+
     Pageable getPageable(Map<String, String> requestParams);
 }

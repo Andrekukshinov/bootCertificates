@@ -1,15 +1,16 @@
 package com.epam.esm.web.helper;
 
 import com.epam.esm.persistence.model.page.Pageable;
-import com.epam.esm.web.exception.InvalidSizeException;
+import com.epam.esm.web.exception.InvalidValueException;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class PageHelperImpl implements PageHelper{
+public class PageHelperImpl implements PageHelper {
     private static final int DEFAULT_SIZE = 7;
+    private static final int DEFAULT_PAGE = 0;
 
     public Map<String, String> getPageParamMap(Map<String, String> requestParams, Integer page) {
         HashMap<String, String> result = new HashMap<>(requestParams);
@@ -17,8 +18,20 @@ public class PageHelperImpl implements PageHelper{
         return result;
     }
 
+    public Map<String, String> getThisPageParamMap(Map<String, String> requestParams, Integer page) {
+        return getPageParamMap(requestParams, page + 1);
+    }
+
+    public Map<String, String> getNextPageParamMap(Map<String, String> requestParams, Integer page) {
+        return getThisPageParamMap(requestParams, page);
+    }
+
+    public Map<String, String> getPreviousPageParamMap(Map<String, String> requestParams, Integer page) {
+        return getThisPageParamMap(requestParams, page);
+    }
+
     public Pageable getPageable(Map<String, String> requestParams) {
-        Integer page = Integer.valueOf(requestParams.get("page"));
+        Integer page = getPage(requestParams);
         Integer size = getSize(requestParams);
         String sort = requestParams.get("sort");
         String sortDir = requestParams.get("sortDir");
@@ -27,12 +40,23 @@ public class PageHelperImpl implements PageHelper{
 
     private Integer getSize(Map<String, String> requestParams) {
         String sizeString = requestParams.get("size");
-        if (sizeString == null){
+        if (sizeString == null) {
             return DEFAULT_SIZE;
         } else if (sizeString.matches("[0-9]+")) {
             return Integer.valueOf(sizeString);
         } else {
-            throw new InvalidSizeException("size must be a positive integer!");
+            throw new InvalidValueException("size must be a positive integer!");
+        }
+    }
+
+    private Integer getPage(Map<String, String> requestParams) {
+        String sizeString = requestParams.get("page");
+        if (sizeString == null) {
+            return DEFAULT_PAGE;
+        } else if (sizeString.matches("[1-9][0-9]*")) {
+            return Integer.parseInt(sizeString) - 1;
+        } else {
+            throw new InvalidValueException("page must be a positive integer!");
         }
     }
 

@@ -7,4 +7,5 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ComponentScan(basePackages = "com.epam.esm.persistence")
 @EntityScan(basePackages = "com.epam.esm.persistence.entity")
-public class PersistenceConfig {}
+public class PersistenceConfig {
+}

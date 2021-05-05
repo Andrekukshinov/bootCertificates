@@ -79,7 +79,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public Page<TagDto> getAll(Pageable pageable) {
-        Page<Tag> page = tagRepository.find(new FindAllSpecification<Tag>(), pageable);
+        Page<Tag> page = tagRepository.find(new FindAllSpecification<>(), pageable);
         List<TagDto> contentDto = page.getContent().stream()
                 .map(order -> modelMapper.map(order, TagDto.class))
                 .collect(Collectors.toList());
@@ -95,11 +95,6 @@ public class TagServiceImpl implements TagService {
             addSavedTag(result, tag);
         }
         return result;
-    }
-
-    @Override
-    public TagDto getTopUserMostPopularTag() {
-        return modelMapper.map(tagRepository.getTopUserMostPopularTag(), TagDto.class);
     }
 
     private void addSavedTag(Set<Tag> result, Tag tag) {
@@ -128,5 +123,10 @@ public class TagServiceImpl implements TagService {
     private Optional<Tag> getTagFromRepo(String name) {
         Page<Tag> tagPage = tagRepository.find(new TagNameSpecification(name), Pageable.unpaged());
         return Optional.ofNullable(DataAccessUtils.singleResult(tagPage.getContent()));
+    }
+
+    @Override
+    public TagDto getTopUserMostPopularTag() {
+        return modelMapper.map(tagRepository.getTopUserMostPopularTag(), TagDto.class);
     }
 }

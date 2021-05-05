@@ -48,15 +48,19 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     private Integer getLastPage(CriteriaBuilder cb, Pageable pageable, Specification<User> specification) {
-        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-        Root<User> certificateRoot = countQuery.from(User.class);
-        countQuery.select(cb.count(certificateRoot));
-        Predicate restriction = specification.toPredicate(certificateRoot, countQuery, cb);
-        countQuery.where(restriction);
-        Long totalAmount = manager.createQuery(countQuery).getSingleResult();
-        Integer pageSize = pageable.getSize();
-        int amount = (int) (totalAmount / pageSize);
-        return totalAmount % pageSize == 0 ? amount : amount + 1;
+        if (!pageable.isPaged()) {
+            return 1;
+        } else {
+            CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+            Root<User> certificateRoot = countQuery.from(User.class);
+            countQuery.select(cb.count(certificateRoot));
+            Predicate restriction = specification.toPredicate(certificateRoot, countQuery, cb);
+            countQuery.where(restriction);
+            Long totalAmount = manager.createQuery(countQuery).getSingleResult();
+            Integer pageSize = pageable.getSize();
+            int amount = (int) (totalAmount / pageSize);
+            return totalAmount % pageSize == 0 ? amount : amount + 1;
+        }
     }
 
     private TypedQuery<User> getPagedQuery(Pageable pageable, CriteriaBuilder cb, CriteriaQuery<User> query, Root<User> from) {
@@ -65,7 +69,7 @@ public class UserRepositoryImpl implements UserRepository {
             int pageSize = pageable.getSize();
             setSort(pageable, cb, query, from);
             TypedQuery<User> exec = manager.createQuery(query);
-            exec.setFirstResult(pageNumber);
+            exec.setFirstResult(pageNumber * pageSize);
             exec.setMaxResults(pageSize);
             return exec;
         }

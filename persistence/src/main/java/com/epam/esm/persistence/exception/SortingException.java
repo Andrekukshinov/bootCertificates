@@ -1,6 +1,6 @@
 package com.epam.esm.persistence.exception;
 
-public class SortingException extends RuntimeException{
+public class SortingException extends RuntimeException {
     public SortingException() {
         super();
     }

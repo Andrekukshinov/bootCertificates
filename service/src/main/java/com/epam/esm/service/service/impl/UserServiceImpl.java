@@ -6,7 +6,6 @@ import com.epam.esm.persistence.model.page.PageImpl;
 import com.epam.esm.persistence.model.page.Pageable;
 import com.epam.esm.persistence.repository.UserRepository;
 import com.epam.esm.service.dto.user.UserInfoDto;
-import com.epam.esm.service.dto.user.UserOrderDto;
 import com.epam.esm.service.exception.EntityNotFoundException;
 import com.epam.esm.service.service.UserService;
 import org.modelmapper.ModelMapper;
@@ -31,10 +30,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserOrderDto getById(Long id) {
+    public UserInfoDto getById(Long id) {
         Optional<User> optionalUser = userRepository.findById(id);
         User user = optionalUser.orElseThrow(() -> new EntityNotFoundException(String.format(NOT_FOUND, id)));
-        return mapper.map(user, UserOrderDto.class);
+        return mapper.map(user, UserInfoDto.class);
     }
 
     @Override

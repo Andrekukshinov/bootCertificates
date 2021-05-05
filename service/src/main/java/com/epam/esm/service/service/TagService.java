@@ -38,6 +38,7 @@ public interface TagService {
 
     /**
      * Method for returning list of all tag dtos that are present in the system
+     *
      * @return list of tag dtos
      */
     Page<TagDto> getAll(Pageable pageable);

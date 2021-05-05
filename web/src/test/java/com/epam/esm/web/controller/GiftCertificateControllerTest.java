@@ -89,7 +89,7 @@ class GiftCertificateControllerTest {
 
     @Test
     void getGiftCertificateById() throws Exception {
-        when(certificateService.getCertificateWithTagsById(1L)).thenReturn(OBJECT);
+        when(certificateService.getCertificateById(1L)).thenReturn(OBJECT);
 
         mockMvc.perform(get("/api/v1/certificates/1"))
                 .andExpect(status().isOk())
@@ -103,7 +103,7 @@ class GiftCertificateControllerTest {
                 .andExpect(jsonPath("$.createDate", is(List.of(2021, 04, 05, 13, 45, 21))))
                 .andExpect(jsonPath("$.lastUpdateDate", is(List.of(2021, 04, 05, 13, 45, 21))));
 
-        verify(certificateService, times(1)).getCertificateWithTagsById(1L);
+        verify(certificateService, times(1)).getCertificateById(1L);
 
     }
 

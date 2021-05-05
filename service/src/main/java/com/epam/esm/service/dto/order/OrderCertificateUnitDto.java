@@ -6,6 +6,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
+import java.util.Objects;
 
 public class OrderCertificateUnitDto {
     @Null(message = "id must be null")
@@ -48,5 +49,31 @@ public class OrderCertificateUnitDto {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    @Override
+    public String toString() {
+        return "OrderCertificateUnitDto{" +
+                "id=" + id +
+                ", orderCertificate=" + orderCertificate +
+                ", quantity=" + quantity +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        OrderCertificateUnitDto that = (OrderCertificateUnitDto) o;
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getOrderCertificate(), that.getOrderCertificate()) && Objects.equals(getQuantity(), that.getQuantity());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getOrderCertificate(), getQuantity());
     }
 }

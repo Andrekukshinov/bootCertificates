@@ -1,10 +1,11 @@
 package com.epam.esm.web.handilng;
 
 import com.epam.esm.persistence.exception.SortingException;
+import com.epam.esm.service.exception.DeleteTagInUseException;
 import com.epam.esm.service.exception.EntityAlreadyExistsException;
 import com.epam.esm.service.exception.EntityNotFoundException;
 import com.epam.esm.service.exception.ValidationException;
-import com.epam.esm.web.exception.InvalidSizeException;
+import com.epam.esm.web.exception.InvalidValueException;
 import com.epam.esm.web.model.BindExceptionModel;
 import com.epam.esm.web.model.ExceptionModel;
 import org.apache.logging.log4j.LogManager;
@@ -91,8 +92,15 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
-    @ExceptionHandler(value = InvalidSizeException.class)
-    protected ResponseEntity<Object> handleConflict(InvalidSizeException ex, WebRequest request) {
+    @ExceptionHandler(value = DeleteTagInUseException.class)
+    protected ResponseEntity<Object> handleConflict(DeleteTagInUseException ex, WebRequest request) {
+        LOGGER.error(ex.getMessage(), ex);
+        ExceptionModel body = new ExceptionModel(ex.getMessage(), ENTITY_EXISTS_EXCEPTION);
+        return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.CONFLICT, request);
+    }
+
+    @ExceptionHandler(value = InvalidValueException.class)
+    protected ResponseEntity<Object> handleConflict(InvalidValueException ex, WebRequest request) {
         LOGGER.error(ex.getMessage(), ex);
         ExceptionModel body = new ExceptionModel(ex.getMessage(), BAD_REQUEST);
         return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
@@ -108,7 +116,6 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         LOGGER.error(ex.getMessage(), ex);
-        //todo ask
         String message = ex.getCause().getMessage();
         System.out.println(message);
         ExceptionModel body = new ExceptionModel(ex.getCause().getMessage(), BAD_REQUEST);
@@ -139,4 +146,4 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
 }
 //todo 29.04.2021 test verify, new unit tests
-//todo 29.04.2021 put much data to db, data audit + java docks
+//todo 29.04.2021 put much data to db + java docks

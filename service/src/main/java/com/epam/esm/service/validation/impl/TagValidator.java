@@ -26,7 +26,7 @@ public class TagValidator implements Validator<Tag> {
     private void validateName(String name) throws ValidationException {
         if (name != null && (name.length() > MAX_NAME_LENGTH)) {
             throw new ValidationException("name cannot be longer than 50 symbols!");
-        } else if (name != null &&  name.isEmpty()) {
+        } else if (name != null && name.isEmpty()) {
             throw new ValidationException("name cannot be empty!");
         }
     }
