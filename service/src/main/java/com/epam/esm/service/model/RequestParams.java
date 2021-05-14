@@ -8,10 +8,6 @@ public class RequestParams {
     private List<Long> ids;
     private String certificateDescription;
     private String certificateName;
-//    private String status;
-//    private SortDirection nameSortDir;
-//    private SortDirection createDateSortDir;
-
 
     private RequestParams(Set<String> tagNames, List<Long> ids, String certificateDescription, String certificateName) {
         this.tagNames = tagNames;

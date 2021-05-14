@@ -77,6 +77,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format(WRONG_CERTIFICATE, updateId)));
         certificateDto.setId(updateId);
         GiftCertificate certificate = modelMapper.map(certificateDto, GiftCertificate.class);
+        certificate.setStatus(GiftCertificateStatus.ACTIVE);
         certificate.setLastUpdateDate(LocalDateTime.now());
         saveCertificateTags(certificate);
         GiftCertificate updated = certificateRepository.update(certificate);

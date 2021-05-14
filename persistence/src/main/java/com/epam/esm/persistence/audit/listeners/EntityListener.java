@@ -37,6 +37,5 @@ public class EntityListener {
         EntityManager bean = BeanUtil.getBean(EntityManager.class);
         History str = new History(LocalDateTime.now(), target.toString(), action);
         bean.persist(str);
-
     }
 }

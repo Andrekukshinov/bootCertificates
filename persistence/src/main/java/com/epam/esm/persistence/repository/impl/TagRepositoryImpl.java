@@ -34,7 +34,7 @@ public class TagRepositoryImpl implements TagRepository {
                     " WHERE tags.id = :id";
 
     private static final String FIND_MOST_POPULAR_TOP_USER_TAG =
-            "SELECT tg.name, tg.id, SUM(oc.quantity) total_amount\n" +
+                    "SELECT tg.name, tg.id, SUM(oc.quantity) total_amount\n" +
                     "FROM tags AS tg\n" +
                     "         INNER JOIN tags_gift_certificates tgc ON tg.id = tgc.tag_id\n" +
                     "         INNER JOIN gift_certificates gc ON tgc.gift_certificate_id = gc.id\n" +
