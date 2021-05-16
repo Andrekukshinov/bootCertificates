@@ -4,6 +4,7 @@ import com.epam.esm.persistence.exception.SortingException;
 import com.epam.esm.service.exception.DeleteTagInUseException;
 import com.epam.esm.service.exception.EntityAlreadyExistsException;
 import com.epam.esm.service.exception.EntityNotFoundException;
+import com.epam.esm.service.exception.InvalidPageException;
 import com.epam.esm.service.exception.ValidationException;
 import com.epam.esm.web.exception.InvalidValueException;
 import com.epam.esm.web.model.BindExceptionModel;
@@ -39,13 +40,13 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     private static final int NOT_FOUND_EXCEPTION = 404_00;
     private static final int BAD_REQUEST = 400_00;
     private static final String INTERNAL_SERVER_ERROR_MESSAGE = "Internal server error";
-    private static final String INVALID_FIELD = "invalid field: ";
+    private static final String INVALID_VALUE = "invalid value: ";
 
     @Override
     protected ResponseEntity<Object> handleBindException(BindException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         LOGGER.error(ex.getMessage(), ex);
         List<FieldError> allErrors = ex.getFieldErrors();
-        List<String> messages = allErrors.stream().map(error -> INVALID_FIELD + error.getField()).collect(Collectors.toList());
+        List<String> messages = allErrors.stream().map(error -> INVALID_VALUE + error.getField()).collect(Collectors.toList());
         BindExceptionModel model = new BindExceptionModel(messages, BAD_REQUEST);
         return super.handleExceptionInternal(ex, model, headers, status, request);
     }
@@ -113,6 +114,13 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
+    @ExceptionHandler(value = InvalidPageException.class)
+    protected ResponseEntity<Object> handleConflict(InvalidPageException ex, WebRequest request) {
+        LOGGER.error(ex.getMessage(), ex);
+        ExceptionModel body = new ExceptionModel(ex.getMessage(), BAD_REQUEST);
+        return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         LOGGER.error(ex.getMessage(), ex);
@@ -145,3 +153,4 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 }
+

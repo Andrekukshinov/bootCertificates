@@ -7,6 +7,7 @@ import com.epam.esm.persistence.model.page.Pageable;
 import com.epam.esm.persistence.repository.UserRepository;
 import com.epam.esm.service.dto.user.UserInfoDto;
 import com.epam.esm.service.exception.EntityNotFoundException;
+import com.epam.esm.service.exception.InvalidPageException;
 import com.epam.esm.service.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,10 +39,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserInfoDto> getAll(Pageable pageable) {
-        Page<User> page = userRepository.findAll(pageable);
-        List<UserInfoDto> contentDto = page.getContent().stream()
+        Page<User> userPage = userRepository.findAll(pageable);
+        List<UserInfoDto> contentDto = userPage.getContent().stream()
                 .map(order -> mapper.map(order, UserInfoDto.class))
                 .collect(Collectors.toList());
-        return new PageImpl<>(contentDto, pageable, page.getLastPage());
+        PageImpl<UserInfoDto> page = new PageImpl<>(contentDto, pageable, userPage.getLastPage());
+        Integer lastPage = page.getLastPage();
+        Integer currentPage = page.getPage();
+        if (lastPage < currentPage){
+            throw new InvalidPageException("current page: " + currentPage + " cannot be grater than last page: " + lastPage);
+        }
+        return page;
     }
 }

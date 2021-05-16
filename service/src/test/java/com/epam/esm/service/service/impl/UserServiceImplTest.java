@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 class UserServiceImplTest {
-    private static final UserInfoDto USER_DTO = new UserInfoDto(1L, "pass", "email", "nick");
+    private static final UserInfoDto USER_DTO = new UserInfoDto(1L, "email", "nick");
 
     private static final User USER = new User(1L, "pass", "email", "nick");
 

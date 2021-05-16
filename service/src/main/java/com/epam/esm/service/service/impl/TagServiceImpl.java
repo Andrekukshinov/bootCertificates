@@ -12,6 +12,7 @@ import com.epam.esm.service.exception.DeleteTagInUseException;
 import com.epam.esm.service.exception.EntityAlreadyExistsException;
 import com.epam.esm.service.exception.EntityNotFoundException;
 import com.epam.esm.service.exception.InvalidEntityException;
+import com.epam.esm.service.exception.InvalidPageException;
 import com.epam.esm.service.exception.ValidationException;
 import com.epam.esm.service.service.TagService;
 import com.epam.esm.service.validation.Validator;
@@ -89,11 +90,17 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public Page<TagDto> getAll(Pageable pageable) {
-        Page<Tag> page = tagRepository.find(new FindAllSpecification<>(), pageable);
-        List<TagDto> contentDto = page.getContent().stream()
+        Page<Tag> tagPage = tagRepository.find(new FindAllSpecification<>(), pageable);
+        List<TagDto> contentDto = tagPage.getContent().stream()
                 .map(order -> modelMapper.map(order, TagDto.class))
                 .collect(Collectors.toList());
-        return new PageImpl<>(contentDto, pageable, page.getLastPage());
+        PageImpl<TagDto> page = new PageImpl<>(contentDto, pageable, tagPage.getLastPage());
+        Integer lastPage = page.getLastPage();
+        Integer currentPage = page.getPage();
+        if (lastPage < currentPage){
+            throw new InvalidPageException("current page: " + currentPage + " cannot be grater than last page: " + lastPage);
+        }
+        return page;
     }
 
     @Override

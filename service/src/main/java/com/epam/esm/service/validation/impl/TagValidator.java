@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class TagValidator implements Validator<Tag> {
 
-    private static final int MAX_NAME_LENGTH = 50;
+    private static final int MAX_NAME_LENGTH = 20;
     private static final int MIN_ID_VALUE = 1;
 
     @Override
@@ -25,7 +25,7 @@ public class TagValidator implements Validator<Tag> {
 
     private void validateName(String name) throws ValidationException {
         if (name != null && (name.length() > MAX_NAME_LENGTH)) {
-            throw new ValidationException("name cannot be longer than 50 symbols!");
+            throw new ValidationException("name cannot be longer than 20 symbols!");
         } else if (name != null && name.isEmpty()) {
             throw new ValidationException("name cannot be empty!");
         }

@@ -16,6 +16,7 @@ import com.epam.esm.service.dto.order.OrderCertificateUnitDto;
 import com.epam.esm.service.dto.order.OrderCertificatesDto;
 import com.epam.esm.service.dto.order.OrderDetailsDto;
 import com.epam.esm.service.exception.EntityNotFoundException;
+import com.epam.esm.service.exception.InvalidPageException;
 import com.epam.esm.service.model.RequestParams;
 import com.epam.esm.service.service.GiftCertificateService;
 import com.epam.esm.service.service.OrderService;
@@ -151,6 +152,12 @@ public class OrderServiceImpl implements OrderService {
                 .stream()
                 .map(order -> mapper.map(order, OrderDetailsDto.class))
                 .collect(Collectors.toList());
-        return new PageImpl<>(contentDto, pageable, ordersPage.getLastPage());
+        PageImpl<OrderDetailsDto> page = new PageImpl<>(contentDto, pageable, ordersPage.getLastPage());
+        Integer lastPage = page.getLastPage();
+        Integer currentPage = page.getPage();
+        if (lastPage < currentPage){
+            throw new InvalidPageException("current page: " + currentPage + " cannot be grater than last page: " + lastPage);
+        }
+        return page;
     }
 }

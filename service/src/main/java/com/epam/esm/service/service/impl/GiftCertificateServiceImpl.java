@@ -16,6 +16,7 @@ import com.epam.esm.persistence.model.specification.Specification;
 import com.epam.esm.persistence.repository.GiftCertificateRepository;
 import com.epam.esm.service.dto.certificate.GiftCertificateTagDto;
 import com.epam.esm.service.exception.EntityNotFoundException;
+import com.epam.esm.service.exception.InvalidPageException;
 import com.epam.esm.service.exception.ValidationException;
 import com.epam.esm.service.model.RequestParams;
 import com.epam.esm.service.service.GiftCertificateService;
@@ -92,7 +93,6 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         }
     }
 
-
     @Override
     @Transactional
     public void deleteCertificate(Long id) {
@@ -118,7 +118,13 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     @Override
     public Page<GiftCertificate> getCertificatesBySpecification(RequestParams params, Pageable pageable) {
         Specification<GiftCertificate> specification = getGiftCertificateSpecification(params);
-        return certificateRepository.findBySpecification(specification, pageable);
+        Page<GiftCertificate> page = certificateRepository.findBySpecification(specification, pageable);
+        Integer lastPage = page.getLastPage();
+        Integer currentPage = page.getPage();
+        if (lastPage < currentPage){
+            throw new InvalidPageException("current page: " + currentPage + " cannot be grater than last page: " + lastPage);
+        }
+        return page;
     }
 
     @Override
@@ -128,6 +134,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format(WRONG_CERTIFICATE, certificateId)));
         GiftCertificate giftCertificate = modelMapper.map(toBeUpdated, GiftCertificate.class);
         saveCertificateTags(giftCertificate);
+        giftCertificate.setLastUpdateDate(LocalDateTime.now());
         GiftCertificate updated = certificateRepository.partialUpdate(certificateId, giftCertificate);
         return modelMapper.map(updated, GiftCertificateTagDto.class);
     }

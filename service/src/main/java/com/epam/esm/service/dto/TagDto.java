@@ -13,7 +13,7 @@ public class TagDto extends RepresentationModel<TagDto> {
     @Null(message = "tag id should not be specified", groups = SaveGroup.class)
     private Long id;
     @NotBlank(message = "tag name must be specified")
-    @Size(max = 50, message = "name max length must be less than 51 symbol")
+    @Size(max = 20, message = "name max length must be less than 21 symbol")
     private String name;
 
     public TagDto() {

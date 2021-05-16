@@ -94,7 +94,7 @@ public class UserRepositoryImpl implements UserRepository {
         try {
             return from.get(sort);
         } catch (IllegalArgumentException e) {
-            throw new SortingException("field " + sort + " is invalid");
+            throw new SortingException("sort value: " + sort + " is invalid");
         }
     }
 }

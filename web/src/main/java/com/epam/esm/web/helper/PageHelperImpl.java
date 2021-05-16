@@ -9,8 +9,8 @@ import java.util.Map;
 
 @Component
 public class PageHelperImpl implements PageHelper {
-    private static final int DEFAULT_SIZE = 7;
-    private static final int DEFAULT_PAGE = 0;
+    private static final long DEFAULT_SIZE = 7;
+    private static final long DEFAULT_PAGE = 0;
 
     public Map<String, String> getPageParamMap(Map<String, String> requestParams, Integer page) {
         HashMap<String, String> result = new HashMap<>(requestParams);
@@ -31,32 +31,34 @@ public class PageHelperImpl implements PageHelper {
     }
 
     public Pageable getPageable(Map<String, String> requestParams) {
-        Integer page = getPage(requestParams);
-        Integer size = getSize(requestParams);
+        Long page = getPage(requestParams);
+        Long size = getSize(requestParams);
         String sort = requestParams.get("sort");
         String sortDir = requestParams.get("sortDir");
-        return new Pageable(page, size, sort, sortDir);
+        return new Pageable(Math.toIntExact(page), Math.toIntExact(size), sort, sortDir);
     }
 
-    private Integer getSize(Map<String, String> requestParams) {
+    private Long getSize(Map<String, String> requestParams) {
         String sizeString = requestParams.get("size");
+        Long value;
         if (sizeString == null) {
             return DEFAULT_SIZE;
-        } else if (sizeString.matches("[0-9]+")) {
-            return Integer.valueOf(sizeString);
+        } else if ((sizeString.matches("[1-9][0-9]*")) && (Integer.MAX_VALUE > (value = Long.valueOf(sizeString)))) {
+            return value;
         } else {
-            throw new InvalidValueException("size must be a positive integer!");
+            throw new InvalidValueException("size must be a number between zero and " + Integer.MAX_VALUE);
         }
     }
 
-    private Integer getPage(Map<String, String> requestParams) {
+    private Long getPage(Map<String, String> requestParams) {
         String sizeString = requestParams.get("page");
+        Long value;
         if (sizeString == null) {
             return DEFAULT_PAGE;
-        } else if (sizeString.matches("[1-9][0-9]*")) {
-            return Integer.parseInt(sizeString) - 1;
+        } else if ((sizeString.matches("[1-9][0-9]*")) && (Integer.MAX_VALUE > (value = Long.valueOf(sizeString)))) {
+            return value;
         } else {
-            throw new InvalidValueException("page must be a positive integer!");
+            throw new InvalidValueException("page must be a number between zero and " + Integer.MAX_VALUE);
         }
     }
 
