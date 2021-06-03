@@ -1,5 +1,8 @@
 package com.epam.esm.service.service;
 
+import com.epam.esm.persistence.entity.Tag;
+import com.epam.esm.persistence.model.page.Page;
+import com.epam.esm.persistence.model.page.Pageable;
 import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.exception.ValidationException;
 
@@ -10,12 +13,11 @@ import java.util.Set;
  */
 public interface TagService {
     /**
-     * Method that performs validation for given dto object and saving of tag
+     * Method that saving of tag
      *
-     * @param tag dto to be validated and performed logics with
-     * @throws ValidationException in case of validation error occur
+     * @param tag dto to be performed logics with
      */
-    void saveTag(TagDto tag) throws ValidationException;
+    TagDto save(TagDto tag);
 
     /**
      * Method that deletes object from system
@@ -35,7 +37,22 @@ public interface TagService {
 
     /**
      * Method for returning list of all tag dtos that are present in the system
+     *
      * @return list of tag dtos
      */
-    Set<TagDto> getAll();
+    Page<TagDto> getAll(Pageable pageable);
+
+    /**
+     * Method that saving of tags
+     *
+     * @param tagsToBeSaved dtos to be performed logics with
+     */
+    Set<Tag> saveAll(Set<Tag> tagsToBeSaved) throws ValidationException;
+
+    /**
+     * Method for retrieving tag that was the most widely used by user with the highest cost of all orders
+     *
+     * @return tag
+     */
+    TagDto getTopUserMostPopularTag();
 }

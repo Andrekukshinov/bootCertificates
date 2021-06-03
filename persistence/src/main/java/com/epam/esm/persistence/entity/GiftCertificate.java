@@ -1,31 +1,72 @@
 package com.epam.esm.persistence.entity;
 
+import com.epam.esm.persistence.audit.listeners.EntityListener;
+import com.epam.esm.persistence.entity.enums.GiftCertificateStatus;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Set;
 
+@Entity
+@Table(name = "gift_certificates")
+@EntityListeners(EntityListener.class)
 public class GiftCertificate {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "create_date")
     private LocalDateTime createDate;
+    @Column(name = "last_update_date")
     private LocalDateTime lastUpdateDate;
     private String name;
     private String description;
     private BigDecimal price;
+    @Enumerated(EnumType.STRING)
+    private GiftCertificateStatus status;
     private Integer duration;
+    @ManyToMany(cascade = CascadeType.PERSIST)
+    @JoinTable(
+            name = "tags_gift_certificates",
+            joinColumns = {
+                    @JoinColumn(name = "gift_certificate_id")
+            },
+            inverseJoinColumns = {
+                    @JoinColumn(name = "tag_id")
+            }
+    )
     private Set<Tag> tags;
 
     public GiftCertificate() {
     }
 
-    private GiftCertificate(Long id, LocalDateTime createDate, LocalDateTime lastUpdateDate, String name, String description, BigDecimal price, Integer duration, Set<Tag> tags) {
+    public GiftCertificate(
+            Long id, LocalDateTime createDate, LocalDateTime lastUpdateDate,
+            String name, String description, BigDecimal price, GiftCertificateStatus status,
+            Integer duration, Set<Tag> tags) {
         this.id = id;
         this.createDate = createDate;
         this.lastUpdateDate = lastUpdateDate;
         this.name = name;
         this.description = description;
         this.price = price;
+        this.status = status;
         this.duration = duration;
         this.tags = tags;
+
     }
 
     public Long getId() {
@@ -76,6 +117,14 @@ public class GiftCertificate {
         this.price = price;
     }
 
+    public GiftCertificateStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(GiftCertificateStatus status) {
+        this.status = status;
+    }
+
     public Integer getDuration() {
         return duration;
     }
@@ -92,52 +141,8 @@ public class GiftCertificate {
         this.tags = tags;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        GiftCertificate that = (GiftCertificate) o;
-
-        if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) {
-            return false;
-        }
-        if (getCreateDate() != null ? !getCreateDate().equals(that.getCreateDate()) : that.getCreateDate() != null) {
-            return false;
-        }
-        if (getLastUpdateDate() != null ? !getLastUpdateDate().equals(that.getLastUpdateDate()) : that.getLastUpdateDate() != null) {
-            return false;
-        }
-        if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null) {
-            return false;
-        }
-        if (getDescription() != null ? !getDescription().equals(that.getDescription()) : that.getDescription() != null) {
-            return false;
-        }
-        if (getPrice() != null ? !getPrice().equals(that.getPrice()) : that.getPrice() != null) {
-            return false;
-        }
-        if (getDuration() != null ? !getDuration().equals(that.getDuration()) : that.getDuration() != null) {
-            return false;
-        }
-        return getTags() != null ? getTags().equals(that.getTags()) : that.getTags() == null;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = getId() != null ? getId().hashCode() : 0;
-        result = 31 * result + (getCreateDate() != null ? getCreateDate().hashCode() : 0);
-        result = 31 * result + (getLastUpdateDate() != null ? getLastUpdateDate().hashCode() : 0);
-        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
-        result = 31 * result + (getDescription() != null ? getDescription().hashCode() : 0);
-        result = 31 * result + (getPrice() != null ? getPrice().hashCode() : 0);
-        result = 31 * result + (getDuration() != null ? getDuration().hashCode() : 0);
-        result = 31 * result + (getTags() != null ? getTags().hashCode() : 0);
-        return result;
+    public static final Builder getBuilder() {
+        return new Builder();
     }
 
     @Override
@@ -149,13 +154,27 @@ public class GiftCertificate {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", price=" + price +
+                ", status=" + status +
                 ", duration=" + duration +
                 ", tags=" + tags +
                 '}';
     }
 
-    public static final Builder getBuilder() {
-        return new Builder();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        GiftCertificate that = (GiftCertificate) o;
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getCreateDate(), that.getCreateDate()) && Objects.equals(getLastUpdateDate(), that.getLastUpdateDate()) && Objects.equals(getName(), that.getName()) && Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getPrice(), that.getPrice()) && getStatus() == that.getStatus() && Objects.equals(getDuration(), that.getDuration()) && Objects.equals(getTags(), that.getTags());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getCreateDate(), getLastUpdateDate(), getName(), getDescription(), getPrice(), getStatus(), getDuration(), getTags());
     }
 
     public static final class Builder {
@@ -166,6 +185,7 @@ public class GiftCertificate {
         private String description;
         private BigDecimal price;
         private Integer duration;
+        private GiftCertificateStatus status;
         private Set<Tag> tags;
 
         private Builder() {
@@ -211,8 +231,16 @@ public class GiftCertificate {
             return this;
         }
 
-        public GiftCertificate build() {
-            return new GiftCertificate(id, createDate, lastUpdateDate, name, description, price, duration, tags);
+        public Builder setStatus(GiftCertificateStatus status) {
+            this.status = status;
+            return this;
         }
+
+
+        public GiftCertificate build() {
+            return new GiftCertificate(id, createDate, lastUpdateDate, name, description, price, status, duration, tags);
+        }
+
+
     }
 }

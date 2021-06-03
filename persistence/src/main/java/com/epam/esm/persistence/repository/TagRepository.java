@@ -1,33 +1,39 @@
 package com.epam.esm.persistence.repository;
 
 import com.epam.esm.persistence.entity.Tag;
+import com.epam.esm.persistence.model.page.Page;
+import com.epam.esm.persistence.model.page.Pageable;
+import com.epam.esm.persistence.model.specification.Specification;
 
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Interface for executing operations with Tag entity within data source
  */
-public interface TagRepository extends CRDRepository<Tag> {
-    /**
-     * Method for returning set of tags found by names from data source
-     *
-     * @param tagNames names to look for with
-     * @return set of found tags
-     */
-    Set<Tag> findTagsByNames(Set<String> tagNames);
-
+public interface TagRepository extends DeleteRepository<Tag>, CreateRepository<Tag> {
 
     /**
-     * Method for getting tag found by name from data source
+     * Method for searching for presence of tag in certificates
      *
-     * @param tagName name to look for with
+     * @param id to look for tag with
      * @return optional of tag
      */
-    Optional<Tag> findByName(String tagName);
+    Optional<Tag> findInCertificates(Long id);
 
-    /**Method that returns all tags from data source
-     * @return list of tags
+    /**
+     * Method for retrieving tag that was the most widely used by user with the highest cost of all orders
+     *
+     * @return tag
      */
-    Set<Tag> findAll();
+    Tag getTopUserMostPopularTag();
+
+    /**
+     * Method for returning page with tags based on received specifications from data source
+     *
+     * @param specification to search and sort orders with
+     * @param pageable      description of page retrieved
+     * @return page with found orders
+     */
+    Page<Tag> find(Specification<Tag> specification, Pageable pageable);
+
 }

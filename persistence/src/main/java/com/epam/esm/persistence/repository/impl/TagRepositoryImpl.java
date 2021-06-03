@@ -1,78 +1,152 @@
 package com.epam.esm.persistence.repository.impl;
 
 import com.epam.esm.persistence.entity.Tag;
-import com.epam.esm.persistence.extractor.FieldsExtractor;
-import com.epam.esm.persistence.mapper.TagRowMapper;
+import com.epam.esm.persistence.exception.SortingException;
+import com.epam.esm.persistence.model.page.Page;
+import com.epam.esm.persistence.model.page.PageImpl;
+import com.epam.esm.persistence.model.page.Pageable;
+import com.epam.esm.persistence.model.specification.FindByIdInSpecification;
+import com.epam.esm.persistence.model.specification.Specification;
 import com.epam.esm.persistence.repository.TagRepository;
-import com.epam.esm.persistence.util.jdbc.TagSimpleJdbcInsert;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.Map;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Repository
+@Transactional
 public class TagRepositoryImpl implements TagRepository {
+    private static final String ALL_TAGS = "SELECT T FROM Tag T";
+    private static final String FIND_IN_CERTIFICATES =
+            " SELECT tags.id, tags.name FROM tags" +
+                    " INNER JOIN tags_gift_certificates tgc ON tags.id = tgc.tag_id" +
+                    " WHERE tags.id = :id";
 
-    private static final String GET_BY_ID = "SELECT id, name FROM tags WHERE id = ?";
-    private static final String GET_ALL = "SELECT id, name FROM tags ";
-    private static final String GET_BY_NAME = "SELECT id, name FROM tags WHERE name = ?";
-    private static final String DELETE_TAG = "DELETE FROM tags WHERE id = ?";
-    private static final String COMMA = ", ";
-    private static final String GET_ALL_WHERE_NAME_IN = "SELECT id, name FROM tags WHERE name IN (%s)";
+    private static final String FIND_MOST_POPULAR_TOP_USER_TAG =
+                    "SELECT tg.name, tg.id, SUM(oc.quantity) total_amount\n" +
+                    "FROM tags AS tg\n" +
+                    "         INNER JOIN tags_gift_certificates tgc ON tg.id = tgc.tag_id\n" +
+                    "         INNER JOIN gift_certificates gc ON tgc.gift_certificate_id = gc.id\n" +
+                    "         INNER JOIN order_certificates oc ON gc.id = oc.certificate_id\n" +
+                    "         INNER JOIN orders o ON oc.order_id = o.id\n" +
+                    "WHERE o.id = (\n" +
+                    "    SELECT user_id AS uid\n" +
+                    "    FROM orders\n" +
+                    "    GROUP BY uid\n" +
+                    "    ORDER BY SUM(total_price) DESC\n" +
+                    "    LIMIT 0,1\n" +
+                    ")\n" +
+                    "GROUP BY tg.name,  tg.id\n" +
+                    "ORDER BY total_amount DESC\n" +
+                    "LIMIT 0,1;";
 
-    private final JdbcTemplate jdbc;
-    private final TagRowMapper mapper;
-    private final FieldsExtractor<Tag> tagFieldsExtractor;
-    private final SimpleJdbcInsert jdbcInsert;
-
-
-    @Autowired
-    public TagRepositoryImpl(JdbcTemplate jdbc, TagRowMapper mapper,
-                             FieldsExtractor<Tag> tagFieldsExtractor,
-                             TagSimpleJdbcInsert jdbcInsert) {
-        this.jdbc = jdbc;
-        this.mapper = mapper;
-        this.tagFieldsExtractor = tagFieldsExtractor;
-        this.jdbcInsert = jdbcInsert;
-    }
+    @PersistenceContext
+    private EntityManager manager;
 
     @Override
-    public Long save(Tag tag) {
-        Map<String, Object> fieldsValuesMap = tagFieldsExtractor.getFieldsValuesMap(tag);
-        Number number = jdbcInsert.executeAndReturnKey(fieldsValuesMap);
-        return number.longValue();
+    public Tag save(Tag tag) {
+        manager.persist(tag);
+        return tag;
     }
 
     @Override
     public Optional<Tag> findById(Long id) {
-        return Optional.ofNullable(DataAccessUtils.singleResult(jdbc.query(GET_BY_ID, mapper, id)));
+        Page<Tag> tags = find(new FindByIdInSpecification<>(List.of(id)), Pageable.unpaged());
+        return Optional.ofNullable(DataAccessUtils.singleResult(tags.getContent()));
     }
 
     @Override
-    public int delete(Long id) {
-        return jdbc.update(DELETE_TAG, id);
+    public void delete(Long id) {
+        Tag tag = manager.find(Tag.class, id);
+        manager.remove(tag);
     }
 
     @Override
-    public Set<Tag> findTagsByNames(Set<String> tagNames) {
-        String sqlNamesPlaceHolder = String.join(COMMA, Collections.nCopies(tagNames.size(), "?"));
-        String query = String.format(GET_ALL_WHERE_NAME_IN, sqlNamesPlaceHolder);
-        return Set.copyOf(jdbc.query(query, mapper, tagNames.toArray()));
+    public Optional<Tag> findInCertificates(Long id) {
+        Query query = manager.createNativeQuery(FIND_IN_CERTIFICATES, Tag.class).setParameter("id", id);
+        return Optional.ofNullable((Tag) DataAccessUtils.singleResult(query.getResultList()));
     }
 
     @Override
-    public Optional<Tag> findByName(String tagName) {
-        return Optional.ofNullable(DataAccessUtils.singleResult(jdbc.query(GET_BY_NAME, mapper, tagName)));
+    public Page<Tag> find(Specification<Tag> specification, Pageable pageable) {
+        CriteriaBuilder cb = manager.getCriteriaBuilder();
+        CriteriaQuery<Tag> query = cb.createQuery(Tag.class);
+        Root<Tag> tagFrom = query.from(Tag.class);
+        Predicate restriction = specification.toPredicate(tagFrom, query, cb);
+        query.where(restriction);
+        Integer lastPage = getLastPage(cb, pageable, specification);
+        TypedQuery<Tag> exec = getPagedQuery(pageable, cb, query, tagFrom);
+        List<Tag> resultList = exec.getResultList();
+        return new PageImpl<>(resultList, pageable, lastPage);
     }
 
     @Override
-    public Set<Tag> findAll() {
-        return Set.copyOf(jdbc.query(GET_ALL, mapper));
+    public Tag getTopUserMostPopularTag() {
+        Query nativeQuery = manager.createNativeQuery(FIND_MOST_POPULAR_TOP_USER_TAG, Tag.class);
+        return (Tag) DataAccessUtils.singleResult(nativeQuery.getResultList());
+    }
+
+
+    private Integer getLastPage(CriteriaBuilder cb, Pageable pageable, Specification<Tag> specification) {
+        if (!pageable.isPaged()) {
+            return 1;
+        } else {
+            CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+            Root<Tag> certificateRoot = countQuery.from(Tag.class);
+            countQuery.select(cb.count(certificateRoot));
+            Predicate restriction = specification.toPredicate(certificateRoot, countQuery, cb);
+            countQuery.where(restriction);
+            Long totalAmount = manager.createQuery(countQuery).getSingleResult();
+            Integer pageSize = pageable.getSize();
+            int amount = (int) (totalAmount / pageSize);
+            return totalAmount % pageSize == 0 ? amount : amount + 1;
+        }
+    }
+
+
+    private TypedQuery<Tag> getPagedQuery(Pageable pageable, CriteriaBuilder cb, CriteriaQuery<Tag> query, Root<Tag> from) {
+        if (pageable.isPaged()) {
+            int pageNumber = pageable.getPage();
+            int pageSize = pageable.getSize();
+            setSort(pageable, cb, query, from);
+            TypedQuery<Tag> exec = manager.createQuery(query);
+            exec.setFirstResult(pageNumber * pageSize);
+            exec.setMaxResults(pageSize);
+            return exec;
+        }
+        return manager.createQuery(query);
+    }
+
+    private void setSort(Pageable pageable, CriteriaBuilder cb, CriteriaQuery<Tag> query, Root<Tag> from) {
+        String sort = pageable.getSort();
+        if (sort == null) {
+            query.orderBy(cb.asc(from.get("id")));
+        } else {
+            Path<Tag> sortParam = getSortParam(from, sort);
+            if ("desc".equalsIgnoreCase(pageable.getSortDir())) {
+                query.orderBy(cb.desc(sortParam));
+            } else {
+                query.orderBy(cb.asc(sortParam));
+            }
+        }
+    }
+
+    private Path<Tag> getSortParam(Root<Tag> from, String sort) {
+        try {
+            return from.get(sort);
+        } catch (IllegalArgumentException e) {
+            throw new SortingException("sort value: " + sort + " is invalid");
+        }
     }
 }

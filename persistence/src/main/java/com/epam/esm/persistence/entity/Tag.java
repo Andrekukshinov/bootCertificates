@@ -1,9 +1,25 @@
 package com.epam.esm.persistence.entity;
 
-import java.io.Serializable;
+import com.epam.esm.persistence.audit.listeners.EntityListener;
 
-public class Tag implements Serializable {
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.util.Objects;
+
+@Entity
+@Table(name = "tags")
+@EntityListeners(EntityListener.class)
+public class Tag {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
+    @Column(name = "name")
     private String name;
 
     public Tag(Long id, String name) {
@@ -38,19 +54,20 @@ public class Tag implements Serializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-
         Tag tag = (Tag) o;
-
-        if (getId() != null ? !getId().equals(tag.getId()) : tag.getId() != null) {
-            return false;
-        }
-        return getName() != null ? getName().equals(tag.getName()) : tag.getName() == null;
+        return Objects.equals(getId(), tag.getId()) && Objects.equals(getName(), tag.getName());
     }
 
     @Override
     public int hashCode() {
-        int result = getId() != null ? getId().hashCode() : 0;
-        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
-        return result;
+        return Objects.hash(getId(), getName());
+    }
+
+    @Override
+    public String toString() {
+        return "Tag{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }
